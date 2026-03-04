@@ -1,185 +1,140 @@
 /**
- * search.js — Search and filter logic for documents
+ * search.js — Document search, filter, and sort
  */
 
-// ─────────────────────────────────────────────────────────
-// Active filters state
-// ─────────────────────────────────────────────────────────
 const activeFilters = {
-  query:      "",
-  dept:       "",
-  type:       "",
-  people:     "",
-  visibility: "",
-  dateFrom:   "",
-  dateTo:     ""
+  query:"", office:"", type:"", tag:"", visibility:"", dateFrom:"", dateTo:""
 };
 
-// ─────────────────────────────────────────────────────────
-// Apply filters and re-render
-// ─────────────────────────────────────────────────────────
+let sortState = { col:"dateAdded", dir:"desc" };
+
+// ── Apply all filters ────────────────────────────────────
 function applyFilters() {
+  const user = getCurrentUser();
   const q    = activeFilters.query.toLowerCase().trim();
-  const dept = activeFilters.dept;
-  const type = activeFilters.type;
-  const ppl  = activeFilters.people.toLowerCase();
-  const vis  = activeFilters.visibility;
-  const from = activeFilters.dateFrom ? new Date(activeFilters.dateFrom) : null;
-  const to   = activeFilters.dateTo   ? new Date(activeFilters.dateTo)   : null;
+  const { office, type, tag, visibility, dateFrom, dateTo } = activeFilters;
+  const from = dateFrom ? new Date(dateFrom) : null;
+  const to   = dateTo   ? new Date(dateTo)   : null;
 
-  filteredDocuments = allDocuments.filter(doc => {
-    // Full-text search across subject, tags, filename, notes, department, people
+  filteredDocs = allDocuments.filter(doc => {
+    // Access control — skip docs user can't see
+    if (!canViewDoc(doc, user)) return false;
+
+    // Full-text search
     if (q) {
-      const haystack = [
-        doc.subject, doc.fileName, doc.notes, doc.departmentOrOffice,
-        doc.uploadedBy, doc.version,
-        ...(doc.tags || []),
-        ...(doc.peopleInvolved || [])
+      const hay = [
+        doc.subject, doc.fileName, doc.notes,
+        ...(doc.offices||[]),
+        ...(doc.tags||[]),
+        ...(doc.peopleInvolvedNames||[]),
+        doc.uploadedByName, doc.version
       ].join(" ").toLowerCase();
-      if (!haystack.includes(q)) return false;
+      if (!hay.includes(q)) return false;
     }
 
-    // Department filter
-    if (dept && (doc.departmentOrOffice || "").toLowerCase() !== dept.toLowerCase()) return false;
+    if (office && !(doc.offices||[]).includes(office)) return false;
+    if (type   && doc.fileType !== type)                return false;
+    if (tag    && !(doc.tags||[]).includes(tag))         return false;
+    if (visibility && doc.visibility !== visibility)     return false;
 
-    // File type filter
-    if (type && (doc.fileType || "") !== type) return false;
-
-    // People filter
-    if (ppl) {
-      const peopleLower = (doc.peopleInvolved || []).map(p => p.toLowerCase());
-      if (!peopleLower.some(p => p.includes(ppl))) return false;
-    }
-
-    // Visibility filter
-    if (vis && (doc.visibility || "") !== vis) return false;
-
-    // Date range filter (on dateCreated)
     if (from || to) {
-      const docDate = doc.dateCreated ? new Date(doc.dateCreated) : null;
-      if (!docDate) return false;
-      if (from && docDate < from) return false;
-      if (to   && docDate > to)   return false;
+      const d = doc.dateCreated ? new Date(doc.dateCreated) : null;
+      if (!d) return false;
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
     }
 
     return true;
   });
 
-  renderDocumentTable(filteredDocuments);
-  renderActiveFilterPills();
+  // Apply sort
+  filteredDocs.sort((a, b) => {
+    let av = a[sortState.col]||"", bv = b[sortState.col]||"";
+    if (av?.toDate) av = av.toDate().getTime();
+    if (bv?.toDate) bv = bv.toDate().getTime();
+    if (typeof av === "string") av = av.toLowerCase();
+    if (typeof bv === "string") bv = bv.toLowerCase();
+    if (av < bv) return sortState.dir==="asc" ? -1 :  1;
+    if (av > bv) return sortState.dir==="asc" ?  1 : -1;
+    return 0;
+  });
+
+  renderDocumentTable(filteredDocs);
+  renderFilterPills();
 }
 
-// ─────────────────────────────────────────────────────────
-// Filter pill display
-// ─────────────────────────────────────────────────────────
-function renderActiveFilterPills() {
-  const container = document.getElementById("activeFilterPills");
-  if (!container) return;
-
+// ── Active filter pills ───────────────────────────────────
+function renderFilterPills() {
+  const wrap = document.getElementById("activeFilterPills");
+  if (!wrap) return;
   const pills = [];
-  if (activeFilters.query)      pills.push({ label: `"${activeFilters.query}"`,      key: "query"      });
-  if (activeFilters.dept)       pills.push({ label: `Dept: ${activeFilters.dept}`,   key: "dept"       });
-  if (activeFilters.type)       pills.push({ label: `Type: ${activeFilters.type}`,   key: "type"       });
-  if (activeFilters.people)     pills.push({ label: `Person: ${activeFilters.people}`,key:"people"     });
-  if (activeFilters.visibility) pills.push({ label: activeFilters.visibility,         key: "visibility" });
-  if (activeFilters.dateFrom)   pills.push({ label: `From: ${activeFilters.dateFrom}`,key: "dateFrom"  });
-  if (activeFilters.dateTo)     pills.push({ label: `To: ${activeFilters.dateTo}`,    key: "dateTo"    });
+  if (activeFilters.query)      pills.push({ label:`"${activeFilters.query}"`,      key:"query"      });
+  if (activeFilters.office)     pills.push({ label:`Office: ${activeFilters.office}`,key:"office"    });
+  if (activeFilters.type)       pills.push({ label:`Type: ${activeFilters.type}`,   key:"type"       });
+  if (activeFilters.tag)        pills.push({ label:`Tag: ${activeFilters.tag}`,     key:"tag"        });
+  if (activeFilters.visibility) pills.push({ label:activeFilters.visibility,         key:"visibility" });
+  if (activeFilters.dateFrom)   pills.push({ label:`From: ${activeFilters.dateFrom}`,key:"dateFrom"  });
+  if (activeFilters.dateTo)     pills.push({ label:`To: ${activeFilters.dateTo}`,   key:"dateTo"     });
 
-  container.innerHTML = pills.map(p => `
+  wrap.innerHTML = pills.map(p=>`
     <button class="filter-pill-active" onclick="clearFilter('${p.key}')">
       ${escapeHtml(p.label)} <i class="fa-solid fa-xmark ms-1"></i>
-    </button>`
-  ).join("");
+    </button>`).join("");
 
-  const clearAllBtn = document.getElementById("clearAllFiltersBtn");
-  if (clearAllBtn) {
-    clearAllBtn.style.display = pills.length > 1 ? "inline-flex" : "none";
-  }
+  const clrBtn = document.getElementById("clearAllFiltersBtn");
+  if (clrBtn) clrBtn.style.display = pills.length>1 ? "inline-flex" : "none";
 }
 
 function clearFilter(key) {
   activeFilters[key] = "";
-  // Reset corresponding UI input
-  const map = {
-    query:      "searchInput",
-    dept:       "filterDept",
-    type:       "filterType",
-    people:     "filterPeople",
-    visibility: "filterVisibility",
-    dateFrom:   "filterDateFrom",
-    dateTo:     "filterDateTo"
-  };
-  const el = document.getElementById(map[key]);
+  const ids = { query:"searchInput", office:"filterOffice", type:"filterType",
+                tag:"filterTag", visibility:"filterVisibility",
+                dateFrom:"filterDateFrom", dateTo:"filterDateTo" };
+  const el = document.getElementById(ids[key]);
   if (el) el.value = "";
   applyFilters();
 }
 
 function clearAllFilters() {
-  Object.keys(activeFilters).forEach(k => activeFilters[k] = "");
-  ["searchInput","filterDept","filterType","filterPeople","filterVisibility",
-   "filterDateFrom","filterDateTo"].forEach(id => {
+  Object.keys(activeFilters).forEach(k => activeFilters[k]="");
+  ["searchInput","filterOffice","filterType","filterTag",
+   "filterVisibility","filterDateFrom","filterDateTo"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
   applyFilters();
 }
 
-// ─────────────────────────────────────────────────────────
-// Event listeners for search/filter inputs
-// ─────────────────────────────────────────────────────────
+// ── Column sort ───────────────────────────────────────────
+function sortDocuments(col) {
+  sortState.dir = (sortState.col===col && sortState.dir==="asc") ? "desc" : "asc";
+  sortState.col = col;
+  document.querySelectorAll(".sortable").forEach(th => {
+    th.classList.remove("sort-asc","sort-desc");
+    if (th.dataset.col===col) th.classList.add("sort-"+sortState.dir);
+  });
+  applyFilters();
+}
+
+// ── Wire up listeners ─────────────────────────────────────
 function initSearchListeners() {
-  let debounceTimer;
-
-  const debounced = (fn, delay = 300) => (...args) => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => fn(...args), delay);
-  };
-
   const bind = (id, key) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener("input",  debounced(e => { activeFilters[key] = e.target.value; applyFilters(); }));
-    el.addEventListener("change", e => { activeFilters[key] = e.target.value; applyFilters(); });
+    const handler = debounce(e => { activeFilters[key]=e.target.value; applyFilters(); });
+    el.addEventListener("input",  handler);
+    el.addEventListener("change", e => { activeFilters[key]=e.target.value; applyFilters(); });
   };
+  bind("searchInput",       "query");
+  bind("filterOffice",      "office");
+  bind("filterType",        "type");
+  bind("filterTag",         "tag");
+  bind("filterVisibility",  "visibility");
+  bind("filterDateFrom",    "dateFrom");
+  bind("filterDateTo",      "dateTo");
 
-  bind("searchInput",    "query");
-  bind("filterDept",     "dept");
-  bind("filterType",     "type");
-  bind("filterPeople",   "people");
-  bind("filterVisibility","visibility");
-  bind("filterDateFrom", "dateFrom");
-  bind("filterDateTo",   "dateTo");
-}
-
-// ─────────────────────────────────────────────────────────
-// Sort table columns
-// ─────────────────────────────────────────────────────────
-let sortState = { col: "dateAdded", dir: "desc" };
-
-function sortDocuments(col) {
-  if (sortState.col === col) {
-    sortState.dir = sortState.dir === "asc" ? "desc" : "asc";
-  } else {
-    sortState.col = col;
-    sortState.dir = "asc";
-  }
-
-  filteredDocuments.sort((a, b) => {
-    let av = a[col] || "", bv = b[col] || "";
-    if (av?.toDate) av = av.toDate().getTime();
-    if (bv?.toDate) bv = bv.toDate().getTime();
-    if (typeof av === "string") av = av.toLowerCase();
-    if (typeof bv === "string") bv = bv.toLowerCase();
-    if (av < bv) return sortState.dir === "asc" ? -1 :  1;
-    if (av > bv) return sortState.dir === "asc" ?  1 : -1;
-    return 0;
-  });
-
-  renderDocumentTable(filteredDocuments);
-
-  // Update sort icons
-  document.querySelectorAll(".sortable").forEach(th => {
-    th.classList.remove("sort-asc","sort-desc");
-    if (th.dataset.col === col) th.classList.add("sort-" + sortState.dir);
-  });
+  document.querySelectorAll(".sortable").forEach(th =>
+    th.addEventListener("click", () => sortDocuments(th.dataset.col))
+  );
+  document.getElementById("clearAllFiltersBtn")?.addEventListener("click", clearAllFilters);
 }

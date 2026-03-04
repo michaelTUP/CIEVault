@@ -3,743 +3,191 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="CIE Vault — Client-side Document Management System powered by Firebase & Google Drive" />
-  <title>CIE Vault — Document Management System</title>
-
-  <!-- Bootstrap 5 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-  <!-- Font Awesome 6 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <!-- Google Fonts -->
+  <title>DocVault — Sign In</title>
+  <meta name="description" content="DocVault Document Management System" />
+  <meta name="theme-color" content="#f0a033" />
+  <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Custom styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
+<body class="auth-body">
 
-<!-- ════════════════════════════════════════════════════════════════
-     Loading Overlay
-════════════════════════════════════════════════════════════════ -->
-<div id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">Loading CIE Vault…</div>
-</div>
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container"></div>
 
-<!-- ════════════════════════════════════════════════════════════════
-     Toast Container
-════════════════════════════════════════════════════════════════ -->
-<div id="toastContainer"></div>
+  <!-- Auth card -->
+  <div class="auth-wrapper">
+    <div class="auth-card">
 
-<!-- ════════════════════════════════════════════════════════════════
-     Sidebar Mobile Overlay
-════════════════════════════════════════════════════════════════ -->
-<div id="sidebarOverlay"></div>
-
-<!-- ════════════════════════════════════════════════════════════════
-     App Shell
-════════════════════════════════════════════════════════════════ -->
-<div class="app-shell">
-
-  <!-- ── Sidebar ─────────────────────────────────────────────── -->
-  <nav id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon"><i class="fa-solid fa-vault"></i></div>
-      <div>
-        <div class="brand-text">CIE Vault</div>
-        <div class="brand-sub">DMS v1.0</div>
-      </div>
-    </div>
-
-    <div class="sidebar-nav">
-      <div class="nav-section-label">Main</div>
-
-      <a href="#" class="nav-link active" data-view="documents">
-        <i class="fa-solid fa-file-lines"></i> Documents
-      </a>
-      <a href="#" class="nav-link" data-view="people">
-        <i class="fa-solid fa-users"></i> People Directory
-      </a>
-      <a href="#" class="nav-link" data-view="dashboard">
-        <i class="fa-solid fa-chart-pie"></i> Dashboard
-      </a>
-
-      <div class="nav-section-label mt-3">Quick Actions</div>
-      <a href="#" class="nav-link" onclick="showView('documents'); setTimeout(openAddModal, 200)">
-        <i class="fa-solid fa-plus"></i> Register Document
-      </a>
-      <a href="#" class="nav-link" onclick="showView('people'); setTimeout(openAddPersonModal, 200)">
-        <i class="fa-solid fa-user-plus"></i> Add Person
-      </a>
-    </div>
-
-    <div class="sidebar-footer">
-      <div id="firebaseStatus" class="firebase-status">
-        <i class="fa-solid fa-circle-notch fa-spin me-1"></i> Connecting…
-      </div>
-    </div>
-  </nav>
-
-  <!-- ── Main Content ─────────────────────────────────────────── -->
-  <div class="main-content">
-
-    <!-- Top Header -->
-    <header class="top-header">
-      <button class="btn-hamburger" onclick="toggleSidebar()">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-      <div class="header-title">Doc<span>Vault</span></div>
-      <button class="btn-dms-primary" onclick="showView('documents'); setTimeout(openAddModal, 200)">
-        <i class="fa-solid fa-plus"></i>
-        <span class="d-none d-md-inline">Register Document</span>
-      </button>
-    </header>
-
-    <!-- ══════════════════════════════════════════════════════════
-         VIEW: DOCUMENTS
-    ══════════════════════════════════════════════════════════ -->
-    <section id="view-documents" class="app-view">
-
-      <!-- Setup Banner (shown until Firebase is configured) -->
-      <div class="setup-banner" id="setupBanner">
-        <i class="fa-solid fa-circle-info"></i>
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="auth-logo-icon"><i class="fa-solid fa-vault"></i></div>
         <div>
-          <strong>Quick Setup:</strong> Open
-          <span class="code-inline">js/firebase-config.js</span>
-          and replace <span class="code-inline">firebaseConfig</span> with your own Firebase project credentials.
-          Then deploy to GitHub Pages. Sample data will be seeded automatically on first load.
-          <a href="https://console.firebase.google.com" target="_blank" class="ms-1">
-            Create a Firebase project <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
-          </a>
+          <div class="auth-logo-name">DocVault</div>
+          <div class="auth-logo-sub">Document Management System</div>
         </div>
       </div>
 
-      <!-- Stats Bar -->
-      <div class="stats-bar">
-        <div class="stat-card">
-          <div class="stat-icon total"><i class="fa-solid fa-folder-open"></i></div>
-          <div>
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-label">Total Docs</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon pdf"><i class="fa-solid fa-file-pdf"></i></div>
-          <div>
-            <div class="stat-value" id="statPDF">0</div>
-            <div class="stat-label">PDFs</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon doc"><i class="fa-solid fa-file-word"></i></div>
-          <div>
-            <div class="stat-value" id="statDOC">0</div>
-            <div class="stat-label">Documents</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon xls"><i class="fa-solid fa-file-excel"></i></div>
-          <div>
-            <div class="stat-value" id="statXLS">0</div>
-            <div class="stat-label">Spreadsheets</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon ppt"><i class="fa-solid fa-file-powerpoint"></i></div>
-          <div>
-            <div class="stat-value" id="statPPT">0</div>
-            <div class="stat-label">Presentations</div>
-          </div>
-        </div>
-      </div>
+      <div id="authSubtitle" class="auth-subtitle">Sign in to your account</div>
 
-      <!-- Section Header -->
-      <div class="section-header">
-        <div>
-          <div class="section-title">Document <span>Registry</span></div>
-          <div class="doc-count" id="docCount">Loading…</div>
+      <!-- ── LOGIN FORM ── -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="mb-3">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <div class="input-icon-wrap">
+            <i class="fa-solid fa-envelope input-icon"></i>
+            <input type="email" id="loginEmail" class="dms-input input-with-icon"
+                   placeholder="you@example.com" required autocomplete="email" />
+          </div>
         </div>
-        <button class="btn-dms-primary" onclick="openAddModal()">
-          <i class="fa-solid fa-plus"></i> Register Document
+        <div class="mb-3">
+          <label class="form-label" for="loginPassword">Password</label>
+          <div class="input-icon-wrap">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="loginPassword" class="dms-input input-with-icon"
+                   placeholder="••••••••" required autocomplete="current-password" />
+            <button type="button" class="input-icon-right" onclick="togglePassword('loginPassword',this)">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div id="loginError" class="auth-error"></div>
+        <button type="submit" id="loginBtn" class="btn-dms-primary w-100 mt-1">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
         </button>
-      </div>
+        <div class="auth-links mt-3">
+          <button type="button" class="auth-link" onclick="switchAuthTab('reset')">Forgot password?</button>
+          <button type="button" class="auth-link" onclick="switchAuthTab('register')">Create account</button>
+        </div>
+      </form>
 
-      <!-- Search & Filter Toolbar -->
-      <div class="toolbar">
-        <div class="row g-2 align-items-center">
-          <!-- Search -->
-          <div class="col-12 col-md-4">
-            <div class="search-input-wrap">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="search" id="searchInput" class="dms-input search-input"
-                     placeholder="Search documents…" />
+      <!-- ── REGISTER FORM ── -->
+      <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label" for="regName">Full Name <span class="text-danger">*</span></label>
+            <input type="text" id="regName" class="dms-input" placeholder="Juan dela Cruz" required />
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="regEmail">Email Address <span class="text-danger">*</span></label>
+            <input type="email" id="regEmail" class="dms-input" placeholder="you@example.com" required />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label" for="regUsername">Username <span class="text-danger">*</span></label>
+            <input type="text" id="regUsername" class="dms-input" placeholder="juandc" required />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label" for="regOffice">Office / Department</label>
+            <input type="text" id="regOffice" class="dms-input" placeholder="Finance" />
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label" for="regPassword">Password <span class="text-danger">*</span></label>
+            <div class="input-icon-wrap">
+              <input type="password" id="regPassword" class="dms-input input-with-icon-right"
+                     placeholder="Min. 6 characters" required minlength="6" />
+              <button type="button" class="input-icon-right" onclick="togglePassword('regPassword',this)">
+                <i class="fa-solid fa-eye"></i>
+              </button>
             </div>
           </div>
-
-          <!-- Filters -->
-          <div class="col-6 col-sm-4 col-md-2">
-            <select id="filterDept" class="dms-input dms-select">
-              <option value="">All Departments</option>
-            </select>
-          </div>
-          <div class="col-6 col-sm-4 col-md-2">
-            <select id="filterType" class="dms-input dms-select">
-              <option value="">All Types</option>
-            </select>
-          </div>
-          <div class="col-6 col-sm-4 col-md-2">
-            <select id="filterPeople" class="dms-input dms-select">
-              <option value="">All People</option>
-            </select>
-          </div>
-          <div class="col-6 col-sm-4 col-md-2">
-            <select id="filterVisibility" class="dms-input dms-select">
-              <option value="">All Visibility</option>
-              <option>Public</option>
-              <option>Internal</option>
-              <option>Confidential</option>
-            </select>
+          <div class="col-sm-6">
+            <label class="form-label" for="regConfirm">Confirm Password <span class="text-danger">*</span></label>
+            <input type="password" id="regConfirm" class="dms-input" placeholder="Repeat password" required />
           </div>
         </div>
-
-        <!-- Date range -->
-        <div class="row g-2 mt-1">
-          <div class="col-6 col-md-2">
-            <input type="date" id="filterDateFrom" class="dms-input" title="Date Created From" />
-          </div>
-          <div class="col-6 col-md-2">
-            <input type="date" id="filterDateTo"   class="dms-input" title="Date Created To" />
-          </div>
-        </div>
-
-        <!-- Active filter pills -->
-        <div class="filter-pills-wrap" id="activeFilterPills"></div>
-        <button id="clearAllFiltersBtn" class="btn-clear-all">
-          <i class="fa-solid fa-xmark"></i> Clear All
+        <div id="registerError" class="auth-error mt-2"></div>
+        <button type="submit" id="registerBtn" class="btn-dms-primary w-100 mt-3">
+          <i class="fa-solid fa-user-plus me-2"></i>Register
         </button>
-      </div>
-
-      <!-- Document Table -->
-      <div id="tableWrapper">
-        <table class="dms-table">
-          <thead>
-            <tr>
-              <th class="td-icon"></th>
-              <th class="sortable td-filename" data-col="fileName">File Name</th>
-              <th class="td-type">Type</th>
-              <th class="sortable td-dept" data-col="departmentOrOffice">Department</th>
-              <th class="td-tags">Tags</th>
-              <th class="td-visibility">Visibility</th>
-              <th class="sortable td-date" data-col="dateCreated">Date</th>
-              <th class="td-version">Ver.</th>
-              <th class="td-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="documentTableBody"></tbody>
-        </table>
-      </div>
-
-      <!-- Empty State -->
-      <div id="emptyState">
-        <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
-        <div class="empty-title">No documents found</div>
-        <div class="empty-sub mb-3">Try adjusting your filters or register your first document.</div>
-        <button class="btn-dms-primary" onclick="openAddModal()">
-          <i class="fa-solid fa-plus"></i> Register Document
-        </button>
-      </div>
-
-    </section>
-
-    <!-- ══════════════════════════════════════════════════════════
-         VIEW: PEOPLE DIRECTORY
-    ══════════════════════════════════════════════════════════ -->
-    <section id="view-people" class="app-view">
-
-      <div class="section-header">
-        <div>
-          <div class="section-title">People <span>Directory</span></div>
-          <div class="doc-count">Staff & personnel records</div>
+        <div class="auth-notice mt-2">
+          <i class="fa-solid fa-circle-info me-1"></i>
+          Your account requires administrator approval before you can sign in.
         </div>
-        <button class="btn-dms-primary" onclick="openAddPersonModal()">
-          <i class="fa-solid fa-user-plus"></i> Add Person
-        </button>
-      </div>
-
-      <!-- People search -->
-      <div class="toolbar mb-3">
-        <div class="col-12 col-md-4">
-          <div class="search-input-wrap">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="search" id="peopleSearchInput" class="dms-input search-input"
-                   placeholder="Search people…" />
-          </div>
+        <div class="auth-links mt-2">
+          <button type="button" class="auth-link" onclick="switchAuthTab('login')">
+            Already have an account? Sign in
+          </button>
         </div>
-      </div>
+      </form>
 
-      <!-- People Table -->
-      <div id="peopleTableWrapper">
-        <div class="bg-surface border rounded" style="border-color: var(--border)!important; overflow:hidden;">
-          <table class="dms-table">
-            <thead>
-              <tr>
-                <th>Person</th>
-                <th>Department</th>
-                <th>Position</th>
-                <th>Status</th>
-                <th>Date Added</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="peopleTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- People Empty State -->
-      <div id="peopleEmptyState">
-        <div class="empty-icon"><i class="fa-solid fa-users"></i></div>
-        <div class="empty-title">No people found</div>
-        <div class="empty-sub mb-3">Add people to the directory to track document involvement.</div>
-        <button class="btn-dms-primary" onclick="openAddPersonModal()">
-          <i class="fa-solid fa-user-plus"></i> Add Person
-        </button>
-      </div>
-
-    </section>
-
-    <!-- ══════════════════════════════════════════════════════════
-         VIEW: DASHBOARD
-    ══════════════════════════════════════════════════════════ -->
-    <section id="view-dashboard" class="app-view">
-
-      <div class="section-title mb-4">System <span>Dashboard</span></div>
-
-      <!-- KPI row -->
-      <div class="dash-kpi-grid">
-        <div class="dash-kpi">
-          <div class="dash-kpi-value" id="dashTotal">0</div>
-          <div class="dash-kpi-label">Total Documents</div>
-        </div>
-        <div class="dash-kpi">
-          <div class="dash-kpi-value" id="dashPeople" style="color:var(--accent-2)">0</div>
-          <div class="dash-kpi-label">People on Record</div>
-        </div>
-      </div>
-
-      <div class="dash-grid">
-
-        <!-- Type breakdown -->
-        <div class="dash-card">
-          <div class="dash-card-title">Documents by Type</div>
-          <div id="typeBreakdownBar" class="dash-bar-wrap mb-3"></div>
-          <div class="d-flex flex-wrap gap-2" style="font-size:11px;">
-            <span><span style="color:#e74c5e">●</span> PDF</span>
-            <span><span style="color:#3cb4f5">●</span> Document</span>
-            <span><span style="color:#5bc9a3">●</span> Spreadsheet</span>
-            <span><span style="color:#f59c3c">●</span> Presentation</span>
-            <span><span style="color:#a78bfa">●</span> Image</span>
-            <span><span style="color:#94a3b8">●</span> Other</span>
-          </div>
-        </div>
-
-        <!-- By Department -->
-        <div class="dash-card">
-          <div class="dash-card-title">Documents by Department</div>
-          <div id="deptBreakdownList"></div>
-        </div>
-
-        <!-- Recent documents -->
-        <div class="dash-card" style="grid-column: 1 / -1;">
-          <div class="dash-card-title">Recently Added</div>
-          <div id="recentDocsList"></div>
-        </div>
-
-      </div>
-    </section>
-
-  </div><!-- end .main-content -->
-</div><!-- end .app-shell -->
-
-
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL: Preview Document
-════════════════════════════════════════════════════════════════ -->
-<div class="modal fade" id="previewModal" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-          <h5 class="modal-title" id="previewFileName">Document Preview</h5>
-          <span id="previewFileType" class="badge"></span>
-        </div>
-        <div class="d-flex align-items-center gap-2 ms-auto">
-          <a id="prevDriveLink" href="#" target="_blank" class="btn-dms-secondary"
-             style="font-size:12px; padding:6px 12px;">
-            <i class="fa-brands fa-google-drive"></i> Open in Drive
-          </a>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-      </div>
-
-      <div class="modal-body p-0">
-        <div class="preview-modal-body">
-
-          <!-- Iframe frame -->
-          <div class="preview-frame-section">
-            <div id="previewFrameWrap" style="width:100%; height:100%;">
-              <iframe id="previewFrame" allowfullscreen allow="autoplay"></iframe>
-            </div>
-            <div id="noPreviewMsg" style="display:none; width:100%; height:100%;">
-              <i class="fa-solid fa-eye-slash fa-3x mb-3" style="color:var(--border-light)"></i>
-              <div style="color:var(--text-muted)">Preview not available</div>
-              <div style="font-size:12px; color:var(--text-muted)">Use "Open in Drive" to view this file</div>
-            </div>
-          </div>
-
-          <!-- Metadata panel -->
-          <div class="preview-meta-panel">
-            <div class="meta-row">
-              <div class="meta-label">Subject</div>
-              <div class="meta-value" id="prevSubject">—</div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Department</div>
-              <div class="meta-value" id="prevDept">—</div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Uploaded By</div>
-              <div class="meta-value" id="prevUploader">—</div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Date Created</div>
-              <div class="meta-value" id="prevCreated">—</div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Date Added</div>
-              <div class="meta-value" id="prevAdded">—</div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Version</div>
-              <div class="meta-value" id="prevVersion">—</div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Visibility</div>
-              <div class="meta-value" id="prevVisibility">—</div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Tags</div>
-              <div class="meta-value" id="prevTags"></div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">People Involved</div>
-              <div class="meta-value" id="prevPeople"></div>
-            </div>
-            <div class="meta-row">
-              <div class="meta-label">Notes</div>
-              <div class="meta-value" id="prevNotes"
-                   style="font-size:12.5px; color:var(--text-secondary)">—</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL: Register / Edit Document
-════════════════════════════════════════════════════════════════ -->
-<div class="modal fade" id="documentModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="docModalTitle">Register Document</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body" style="padding: 24px;">
-        <form id="documentForm" novalidate>
-
-          <!-- Drive URL (only for new docs) -->
-          <div id="driveUrlRow">
-            <div class="mb-3">
-              <label class="form-label" for="driveUrlField" id="driveUrlLabel">
-                Google Drive File Link <span style="color:var(--danger)">*</span>
-              </label>
-              <input type="url" id="driveUrlField" class="dms-input"
-                     placeholder="https://drive.google.com/file/d/…"
-                     required />
-              <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">
-                Paste any Google Drive, Docs, Sheets, or Slides URL.
-              </div>
-            </div>
-            <!-- URL detection preview -->
-            <div id="urlPreviewSection" style="display:none;" class="mb-3">
-              <small class="d-block mb-1" style="color:var(--success)">
-                <i class="fa-solid fa-circle-check me-1"></i>Drive link detected
-              </small>
-              <span style="font-size:12px; color:var(--text-muted);">
-                File ID: <strong id="detectedFileId" class="text-accent"></strong>
-                &nbsp;|&nbsp; Type: <strong id="detectedFileType" class="text-accent"></strong>
-              </span>
-            </div>
-            <hr style="border-color:var(--border); margin:20px 0;" />
-          </div>
-
-          <div class="row g-3">
-            <!-- File Name -->
-            <div class="col-12 col-md-7">
-              <label class="form-label" for="fileNameField">
-                File Name <span style="color:var(--danger)">*</span>
-              </label>
-              <input type="text" id="fileNameField" class="dms-input"
-                     placeholder="e.g. Q1 Budget Report 2024.xlsx" required />
-            </div>
-
-            <!-- File Type -->
-            <div class="col-12 col-md-5">
-              <label class="form-label" for="fileTypeField">File Type</label>
-              <select id="fileTypeField" class="dms-input dms-select">
-                <option value="pdf">PDF</option>
-                <option value="document">Document (Word/ODT)</option>
-                <option value="spreadsheet">Spreadsheet (Excel/Sheets)</option>
-                <option value="presentation">Presentation (PPT/Slides)</option>
-                <option value="image">Image</option>
-                <option value="video">Video</option>
-                <option value="audio">Audio</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <!-- Subject -->
-            <div class="col-12">
-              <label class="form-label" for="subjectField">
-                Subject / Title <span style="color:var(--danger)">*</span>
-              </label>
-              <input type="text" id="subjectField" class="dms-input"
-                     placeholder="Brief description of what this document is about" required />
-            </div>
-
-            <!-- Department -->
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="departmentField">Department / Office</label>
-              <input type="text" id="departmentField" class="dms-input"
-                     placeholder="e.g. Finance, HR, IT…" />
-            </div>
-
-            <!-- Visibility -->
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="visibilityField">Visibility</label>
-              <select id="visibilityField" class="dms-input dms-select">
-                <option value="Public">Public</option>
-                <option value="Internal" selected>Internal</option>
-                <option value="Confidential">Confidential</option>
-              </select>
-            </div>
-
-            <!-- Tags -->
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="tagsField">Tags</label>
-              <input type="text" id="tagsField" class="dms-input"
-                     placeholder="budget, finance, Q1 (comma-separated)" />
-            </div>
-
-            <!-- People Involved -->
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="peopleField">People Involved</label>
-              <input type="text" id="peopleField" class="dms-input"
-                     placeholder="Maria Santos, Juan dela Cruz (comma-separated)" />
-            </div>
-
-            <!-- Uploaded By -->
-            <div class="col-12 col-md-6">
-              <label class="form-label" for="uploadedByField">Uploaded By</label>
-              <input type="text" id="uploadedByField" class="dms-input"
-                     placeholder="Your name" />
-            </div>
-
-            <!-- Version -->
-            <div class="col-6 col-md-3">
-              <label class="form-label" for="versionField">Version</label>
-              <input type="text" id="versionField" class="dms-input" value="1.0"
-                     placeholder="1.0" />
-            </div>
-
-            <!-- Date Created -->
-            <div class="col-6 col-md-3">
-              <label class="form-label" for="dateCreatedField">Date Created</label>
-              <input type="date" id="dateCreatedField" class="dms-input" />
-            </div>
-
-            <!-- Notes -->
-            <div class="col-12">
-              <label class="form-label" for="notesField">Notes / Description</label>
-              <textarea id="notesField" class="dms-input" rows="3"
-                        placeholder="Any additional notes about this document…"></textarea>
-            </div>
-          </div>
-
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" id="saveDocBtn" class="btn-dms-primary"
-                onclick="document.getElementById('documentForm').requestSubmit()">
-          Save Document
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL: Add / Edit Person
-════════════════════════════════════════════════════════════════ -->
-<div class="modal fade" id="personModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="personModalTitle">Add Person</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body" style="padding:24px;">
-        <form id="personForm" novalidate>
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label" for="personNameField">
-                Full Name <span style="color:var(--danger)">*</span>
-              </label>
-              <input type="text" id="personNameField" class="dms-input"
-                     placeholder="e.g. Maria Santos" required />
-            </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label" for="personDeptField">Department</label>
-              <input type="text" id="personDeptField" class="dms-input"
-                     placeholder="e.g. Finance" />
-            </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label" for="personPosField">Position</label>
-              <input type="text" id="personPosField" class="dms-input"
-                     placeholder="e.g. Finance Manager" />
-            </div>
-            <div class="col-12">
-              <label class="form-label" for="personEmailField">Email Address</label>
-              <input type="email" id="personEmailField" class="dms-input"
-                     placeholder="name@company.com" />
-            </div>
-            <div class="col-12 col-sm-6">
-              <label class="form-label" for="personStatusField">Status</label>
-              <select id="personStatusField" class="dms-input dms-select">
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" id="savePersonBtn" class="btn-dms-primary"
-                onclick="document.getElementById('personForm').requestSubmit()">
-          Save Person
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL: Confirm Delete Document
-════════════════════════════════════════════════════════════════ -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content">
-      <div class="modal-header" style="border-bottom-color:var(--danger);">
-        <h5 class="modal-title">
-          <i class="fa-solid fa-triangle-exclamation me-2" style="color:var(--danger)"></i>
-          Delete Document
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" style="padding:20px 24px;">
-        <p style="color:var(--text-secondary); font-size:14px;">
-          Are you sure you want to delete <strong id="deleteDocName"></strong>?
-          This action cannot be undone.
+      <!-- ── RESET FORM ── -->
+      <form id="resetForm" style="display:none" onsubmit="handleForgotPassword(event)">
+        <p class="text-muted small mb-3">
+          Enter your email address and we'll send you a link to reset your password.
         </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button id="confirmDeleteBtn" class="btn-dms-primary"
-                style="background:var(--danger);">
-          <i class="fa-solid fa-trash me-1"></i> Delete
+        <div class="mb-3">
+          <label class="form-label" for="resetEmail">Email Address</label>
+          <div class="input-icon-wrap">
+            <i class="fa-solid fa-envelope input-icon"></i>
+            <input type="email" id="resetEmail" class="dms-input input-with-icon"
+                   placeholder="you@example.com" required />
+          </div>
+        </div>
+        <div id="resetError" class="auth-error"></div>
+        <div id="resetSuccess" class="auth-success" style="display:none">
+          <i class="fa-solid fa-circle-check me-1"></i>
+          Reset link sent! Check your email inbox.
+        </div>
+        <button type="submit" id="resetBtn" class="btn-dms-primary w-100 mt-1">
+          <i class="fa-solid fa-paper-plane me-2"></i>Send Reset Email
         </button>
-      </div>
+        <div class="auth-links mt-3">
+          <button type="button" class="auth-link" onclick="switchAuthTab('login')">
+            Back to sign in
+          </button>
+        </div>
+      </form>
+
+    </div>
+
+    <!-- Firebase not configured warning -->
+    <div id="configBanner" class="config-banner" style="display:none">
+      <i class="fa-solid fa-triangle-exclamation me-2"></i>
+      Firebase not configured. Open <code>js/firebase-config.js</code> and replace the placeholder values.
     </div>
   </div>
-</div>
 
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Check if already logged in — redirect to app
+    if (FIREBASE_CONFIGURED && auth) {
+      auth.onAuthStateChanged(async user => {
+        if (!user) return;
+        try {
+          const snap = await db.collection(C.USERS).doc(user.uid).get();
+          if (snap.exists && snap.data().status==="active" && snap.data().isActive) {
+            window.location.href = "app.html";
+          }
+        } catch(e) { /* stay on login */ }
+      });
+    }
 
-<!-- ════════════════════════════════════════════════════════════════
-     MODAL: Confirm Delete Person
-════════════════════════════════════════════════════════════════ -->
-<div class="modal fade" id="deletePersonModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-sm">
-    <div class="modal-content">
-      <div class="modal-header" style="border-bottom-color:var(--danger);">
-        <h5 class="modal-title">
-          <i class="fa-solid fa-triangle-exclamation me-2" style="color:var(--danger)"></i>
-          Remove Person
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" style="padding:20px 24px;">
-        <p style="color:var(--text-secondary); font-size:14px;">
-          Remove <strong id="deletePersonName"></strong> from the directory?
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button id="confirmDeletePersonBtn" class="btn-dms-primary"
-                style="background:var(--danger);">
-          <i class="fa-solid fa-trash me-1"></i> Remove
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+    if (!FIREBASE_CONFIGURED) {
+      document.getElementById("configBanner").style.display = "flex";
+    }
 
-
-<!-- ════════════════════════════════════════════════════════════════
-     Scripts
-════════════════════════════════════════════════════════════════ -->
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Firebase 9 (compat mode — works like v8 but uses v9 SDK) -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<!-- App modules (order matters) -->
-<script src="js/firebase-config.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/documents.js"></script>
-<script src="js/people.js"></script>
-<script src="js/search.js"></script>
-<script src="js/app.js"></script>
-
+    function togglePassword(fieldId, btn) {
+      const field = document.getElementById(fieldId);
+      const icon  = btn.querySelector("i");
+      if (field.type === "password") {
+        field.type = "text";
+        icon.classList.replace("fa-eye","fa-eye-slash");
+      } else {
+        field.type = "password";
+        icon.classList.replace("fa-eye-slash","fa-eye");
+      }
+    }
+  </script>
 </body>
 </html>

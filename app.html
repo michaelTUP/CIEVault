@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocVault DMS</title>
+  <meta name="theme-color" content="#f0a033" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="app-body">
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-content">
+    <div class="loading-icon"><i class="fa-solid fa-vault"></i></div>
+    <div class="loading-text">DocVault</div>
+    <div class="loading-bar"><div class="loading-bar-inner"></div></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Sidebar overlay (mobile) -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<!-- ════════════════════════════════ SIDEBAR ════════════════════════════════ -->
+<aside id="sidebar" class="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon"><i class="fa-solid fa-vault"></i></div>
+    <div class="sidebar-logo-text">DocVault</div>
+  </div>
+
+  <!-- User card -->
+  <div class="sidebar-user-card">
+    <div id="sidebarAvatar" class="person-avatar sidebar-avatar">U</div>
+    <div class="sidebar-user-info">
+      <div id="sidebarUserName" class="sidebar-user-name">Loading…</div>
+      <div id="sidebarUserRole" class="sidebar-user-role">—</div>
+      <div id="sidebarUserOffice" class="sidebar-user-office text-muted"></div>
+    </div>
+  </div>
+
+  <!-- Online indicator -->
+  <div id="onlineStatus" class="online-indicator online">
+    <i class="fa-solid fa-wifi text-success me-1"></i><span>Online</span>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="#" class="nav-link active" data-view="dashboard">
+      <i class="fa-solid fa-chart-pie nav-icon"></i>Dashboard
+    </a>
+    <a href="#" class="nav-link" data-view="documents">
+      <i class="fa-solid fa-file-lines nav-icon"></i>Documents
+    </a>
+
+    <div class="nav-section-label" data-role="admin">Management</div>
+    <a href="#" class="nav-link" data-view="users" data-role="super">
+      <i class="fa-solid fa-users nav-icon"></i>Users
+      <span id="pendingBadge" class="pending-badge" style="display:none">0</span>
+    </a>
+    <a href="#" class="nav-link" data-view="tags" data-role="admin">
+      <i class="fa-solid fa-tags nav-icon"></i>Tags
+    </a>
+    <a href="#" class="nav-link" data-view="offices" data-role="system">
+      <i class="fa-solid fa-building nav-icon"></i>Offices
+    </a>
+    <a href="#" class="nav-link" data-view="audit" data-role="super">
+      <i class="fa-solid fa-clipboard-list nav-icon"></i>Audit Log
+    </a>
+  </nav>
+
+  <div class="sidebar-spacer"></div>
+
+  <!-- Firebase status -->
+  <div id="firebaseStatus" class="firebase-status">
+    <i class="fa-solid fa-circle-notch fa-spin me-1"></i>Connecting…
+  </div>
+
+  <!-- Logout -->
+  <button id="logoutBtn" class="sidebar-logout">
+    <i class="fa-solid fa-right-from-bracket me-2"></i>Sign Out
+  </button>
+</aside>
+
+<!-- ════════════════════════════════ MAIN ════════════════════════════════ -->
+<div class="app-main">
+
+  <!-- Top bar -->
+  <header class="app-topbar">
+    <button class="topbar-hamburger" onclick="toggleSidebar()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    <div class="topbar-actions">
+      <button id="regDocBtn" class="btn-dms-primary btn-sm" onclick="openAddDocModal()">
+        <i class="fa-solid fa-plus me-1"></i>
+        <span class="d-none d-sm-inline">Register Doc</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Config banner -->
+  <div id="configBanner" class="config-banner" style="display:none">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+    Firebase not configured — open <code>js/firebase-config.js</code> and replace placeholder values.
+  </div>
+
+  <!-- ── VIEW: DASHBOARD ── -->
+  <div id="view-dashboard" class="app-view active">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Dashboard</div>
+        <div class="view-subtitle">Overview of your document repository</div>
+      </div>
+    </div>
+
+    <!-- Pending approvals panel (super+) -->
+    <div class="pending-approvals-section" data-role="super">
+      <div class="section-header-row">
+        <div class="section-label">
+          <i class="fa-solid fa-user-clock me-2" style="color:var(--accent)"></i>
+          Pending Approvals
+          <span id="pendingBadge2" class="pending-badge ms-2">0</span>
+        </div>
+      </div>
+      <div id="pendingUsersPanel" class="pending-panel">
+        <div class="text-center text-muted py-3 small">No pending registrations.</div>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background:rgba(240,160,51,.15);color:var(--accent)">
+          <i class="fa-solid fa-file-lines"></i>
+        </div>
+        <div>
+          <div id="dashTotal" class="kpi-value">0</div>
+          <div class="kpi-label">Documents</div>
+        </div>
+      </div>
+      <div class="kpi-card" data-role="super">
+        <div class="kpi-icon" style="background:rgba(60,180,245,.15);color:var(--accent2)">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+          <div id="dashUsers" class="kpi-value">—</div>
+          <div class="kpi-label">Active Users</div>
+        </div>
+      </div>
+      <div class="kpi-card" data-role="super">
+        <div class="kpi-icon" style="background:rgba(231,76,94,.15);color:var(--danger)">
+          <i class="fa-solid fa-user-clock"></i>
+        </div>
+        <div>
+          <div id="dashPending" class="kpi-value">0</div>
+          <div class="kpi-label">Pending Users</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- Type breakdown -->
+      <div class="dash-card">
+        <div class="dash-card-title">Documents by Type</div>
+        <div id="typeBreakdownBar" class="type-bar-wrap"></div>
+      </div>
+      <!-- Office breakdown -->
+      <div class="dash-card">
+        <div class="dash-card-title">Documents by Office</div>
+        <div id="deptBreakdownList" class="dept-list"></div>
+      </div>
+    </div>
+
+    <!-- Recent docs -->
+    <div class="dash-card mt-3">
+      <div class="dash-card-title">Recently Added</div>
+      <div id="recentDocsList" class="recent-docs-list"></div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: DOCUMENTS ── -->
+  <div id="view-documents" class="app-view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Documents</div>
+        <div id="docCount" class="view-subtitle">Loading…</div>
+      </div>
+      <button id="regDocBtn2" class="btn-dms-primary d-none d-md-flex" onclick="openAddDocModal()">
+        <i class="fa-solid fa-plus me-2"></i>Register Document
+      </button>
+    </div>
+
+    <!-- Search & filter bar -->
+    <div class="filter-bar">
+      <div class="search-input-wrap">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="searchInput" class="dms-input search-input"
+               placeholder="Search documents…" />
+      </div>
+      <select id="filterOffice" class="dms-select filter-select">
+        <option value="">All Offices</option>
+      </select>
+      <select id="filterType" class="dms-select filter-select">
+        <option value="">All Types</option>
+        <option value="pdf">PDF</option>
+        <option value="document">Document</option>
+        <option value="spreadsheet">Spreadsheet</option>
+        <option value="presentation">Presentation</option>
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+        <option value="other">Other</option>
+      </select>
+      <select id="filterVisibility" class="dms-select filter-select">
+        <option value="">All Visibility</option>
+        <option value="Public">Public</option>
+        <option value="Internal">Internal</option>
+        <option value="Confidential">Confidential</option>
+      </select>
+      <input type="date" id="filterDateFrom" class="dms-input filter-date" title="Date From" />
+      <input type="date" id="filterDateTo"   class="dms-input filter-date" title="Date To" />
+    </div>
+
+    <!-- Active filter pills -->
+    <div class="filter-pills-row">
+      <div id="activeFilterPills" class="filter-pills"></div>
+      <button id="clearAllFiltersBtn" class="btn-clear-filters" style="display:none">
+        <i class="fa-solid fa-xmark me-1"></i>Clear All
+      </button>
+    </div>
+
+    <!-- Stats chips -->
+    <div class="stats-chips">
+      <span class="stat-chip"><i class="fa-solid fa-file-lines me-1"></i>Total: <b id="statTotal">0</b></span>
+      <span class="stat-chip stat-pdf"><i class="fa-solid fa-file-pdf me-1"></i>PDF: <b id="statPDF">0</b></span>
+      <span class="stat-chip stat-doc"><i class="fa-solid fa-file-word me-1"></i>Doc: <b id="statDOC">0</b></span>
+      <span class="stat-chip stat-xls"><i class="fa-solid fa-file-excel me-1"></i>XLS: <b id="statXLS">0</b></span>
+      <span class="stat-chip stat-ppt"><i class="fa-solid fa-file-powerpoint me-1"></i>PPT: <b id="statPPT">0</b></span>
+    </div>
+
+    <!-- Document table -->
+    <div id="tableWrapper" class="table-wrapper" style="display:none">
+      <table class="dms-table">
+        <thead>
+          <tr>
+            <th style="width:44px"></th>
+            <th class="sortable" data-col="fileName">File Name <i class="fa-solid fa-sort sort-icon"></i></th>
+            <th>Type</th>
+            <th class="sortable" data-col="offices">Office <i class="fa-solid fa-sort sort-icon"></i></th>
+            <th>Tags</th>
+            <th>Visibility</th>
+            <th class="sortable" data-col="dateCreated">Date <i class="fa-solid fa-sort sort-icon"></i></th>
+            <th>Version</th>
+            <th style="width:110px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="documentTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="empty-state">
+      <i class="fa-solid fa-folder-open empty-icon"></i>
+      <div class="empty-title">No documents found</div>
+      <div class="empty-sub">Register your first document or adjust your filters</div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: USERS ── -->
+  <div id="view-users" class="app-view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">User Management</div>
+        <div class="view-subtitle">Manage users and approve registrations</div>
+      </div>
+    </div>
+
+    <!-- Pending panel -->
+    <div class="section-card mb-3" data-role="super">
+      <div class="section-card-header">
+        <i class="fa-solid fa-user-clock me-2" style="color:var(--accent)"></i>
+        Pending Approvals
+        <span id="pendingBadge3" class="pending-badge ms-2">0</span>
+      </div>
+      <div id="pendingUsersPanel2" class="pending-panel"></div>
+    </div>
+
+    <!-- Users table -->
+    <div class="section-card">
+      <div class="section-card-header d-flex justify-content-between align-items-center">
+        <span><i class="fa-solid fa-users me-2" style="color:var(--accent)"></i>All Users</span>
+        <input type="text" class="dms-input" style="max-width:220px;padding:6px 12px;font-size:13px"
+               placeholder="Search users…" oninput="searchUsers(this.value)" />
+      </div>
+      <div id="usersTableWrap" style="display:none">
+        <table class="dms-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Office</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Registered</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+      <div id="usersEmpty" class="empty-state" style="display:none">
+        <i class="fa-solid fa-users-slash empty-icon"></i>
+        <div class="empty-title">No users found</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: TAGS ── -->
+  <div id="view-tags" class="app-view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Tag Management</div>
+        <div class="view-subtitle">Define tags for document classification</div>
+      </div>
+      <button class="btn-dms-primary" onclick="openAddTagModal()">
+        <i class="fa-solid fa-plus me-2"></i>Add Tag
+      </button>
+    </div>
+    <div class="section-card">
+      <table class="dms-table">
+        <thead><tr><th>Tag Name</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="tagsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── VIEW: OFFICES ── -->
+  <div id="view-offices" class="app-view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Office Management</div>
+        <div class="view-subtitle">Manage office/department list</div>
+      </div>
+      <button class="btn-dms-primary" onclick="openAddOfficeModal()">
+        <i class="fa-solid fa-plus me-2"></i>Add Office
+      </button>
+    </div>
+    <div class="section-card">
+      <table class="dms-table">
+        <thead><tr><th>Office Name</th><th>Created</th><th>Actions</th></tr></thead>
+        <tbody id="officesTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── VIEW: AUDIT LOG ── -->
+  <div id="view-audit" class="app-view">
+    <div class="view-header">
+      <div>
+        <div class="view-title">Audit Log</div>
+        <div class="view-subtitle">Track all system activity</div>
+      </div>
+      <button class="btn-dms-secondary" onclick="_viewLoaded.audit=false;renderAuditLog()">
+        <i class="fa-solid fa-rotate-right me-2"></i>Refresh
+      </button>
+    </div>
+    <div class="section-card">
+      <div id="auditLoader" class="empty-state" style="display:none">
+        <div class="spinner-border text-muted" style="width:2rem;height:2rem"></div>
+      </div>
+      <table class="dms-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>Performed By</th>
+            <th>Target</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="auditTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /app-main -->
+
+
+<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+
+<!-- ── Document Modal ── -->
+<div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="docModalTitle">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 class="modal-title" id="docModalTitle">Register Document</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="documentForm" novalidate>
+          <div class="row g-3">
+
+            <!-- Drive URL -->
+            <div class="col-12">
+              <label class="form-label" id="driveUrlLabel" for="driveUrlField">
+                Google Drive Link <span class="text-danger">*</span>
+              </label>
+              <div class="input-icon-wrap">
+                <i class="fa-brands fa-google-drive input-icon" style="color:#4285f4"></i>
+                <input type="url" id="driveUrlField" class="dms-input input-with-icon"
+                       placeholder="https://drive.google.com/file/d/…" required />
+              </div>
+              <div id="urlPreviewSection" class="url-preview-box" style="display:none">
+                <i class="fa-solid fa-circle-check me-1" style="color:var(--success)"></i>
+                Drive link detected — File ID: <code id="detectedFileId"></code>
+                · Type: <b id="detectedFileType"></b>
+              </div>
+            </div>
+
+            <!-- File Name + Type -->
+            <div class="col-md-7">
+              <label class="form-label" for="fileNameField">File Name <span class="text-danger">*</span></label>
+              <input type="text" id="fileNameField" class="dms-input" placeholder="Annual Report 2024.pdf" required />
+            </div>
+            <div class="col-md-5">
+              <label class="form-label" for="fileTypeField">File Type</label>
+              <select id="fileTypeField" class="dms-select">
+                <option value="pdf">PDF</option>
+                <option value="document">Document</option>
+                <option value="spreadsheet">Spreadsheet</option>
+                <option value="presentation">Presentation</option>
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <!-- Subject -->
+            <div class="col-12">
+              <label class="form-label" for="subjectField">Subject / Description <span class="text-danger">*</span></label>
+              <input type="text" id="subjectField" class="dms-input"
+                     placeholder="Brief description of this document" required />
+            </div>
+
+            <!-- Offices (checkboxes) -->
+            <div class="col-12">
+              <label class="form-label">Offices / Departments</label>
+              <div id="docOfficesWrap" class="checkbox-pill-group"></div>
+            </div>
+
+            <!-- Tags (autocomplete) -->
+            <div class="col-md-6">
+              <label class="form-label" for="tagsInput">Tags</label>
+              <div id="tagPillsWrap" class="tag-pills-selected-wrap"></div>
+              <div class="tag-autocomplete-wrap">
+                <input type="text" id="tagsInput" class="dms-input"
+                       placeholder="Type to search tags…" autocomplete="off" />
+                <div id="tagSuggestions" class="tag-suggestions-dropdown" style="display:none"></div>
+              </div>
+              <input type="hidden" id="tagsInputHidden" />
+            </div>
+
+            <!-- Visibility -->
+            <div class="col-md-3">
+              <label class="form-label" for="visibilityField">Visibility</label>
+              <select id="visibilityField" class="dms-select">
+                <option value="Public">Public</option>
+                <option value="Internal" selected>Internal</option>
+                <option value="Confidential">Confidential</option>
+              </select>
+            </div>
+
+            <!-- Version -->
+            <div class="col-md-3">
+              <label class="form-label" for="versionField">Version</label>
+              <input type="text" id="versionField" class="dms-input" value="1.0" placeholder="1.0" />
+            </div>
+
+            <!-- Date Created -->
+            <div class="col-md-4">
+              <label class="form-label" for="dateCreatedField">Document Date</label>
+              <input type="date" id="dateCreatedField" class="dms-input" />
+            </div>
+
+            <!-- Uploaded by (read-only in edit mode) -->
+            <div class="col-md-8">
+              <label class="form-label" for="uploadedByField">Registered By</label>
+              <input type="text" id="uploadedByField" class="dms-input" readonly
+                     placeholder="Auto-filled on save" />
+            </div>
+
+            <!-- People involved -->
+            <div class="col-12">
+              <label class="form-label">People Involved</label>
+              <div class="mb-2">
+                <input type="text" id="peopleSearch" class="dms-input"
+                       placeholder="Search users…" style="max-width:260px;font-size:13px;padding:6px 12px" />
+              </div>
+              <div id="docPeopleWrap" class="checkbox-pill-group scrollable-checkbox-group"></div>
+            </div>
+
+            <!-- Others involved -->
+            <div class="col-12">
+              <label class="form-label" for="othersInvolvedField">Others Involved <span class="text-muted small">(not registered users)</span></label>
+              <input type="text" id="othersInvolvedField" class="dms-input"
+                     placeholder="Comma-separated names e.g. John Smith, Jane Doe" />
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+              <label class="form-label" for="notesField">Notes</label>
+              <textarea id="notesField" class="dms-input" rows="3"
+                        placeholder="Additional notes or remarks…"></textarea>
+            </div>
+
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="saveDocBtn" class="btn-dms-primary" onclick="document.getElementById('documentForm').requestSubmit()">
+          Save Document
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Preview Modal ── -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+  <div class="modal-dialog modal-fullscreen-lg-down modal-xl">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <div class="d-flex align-items-center gap-2 overflow-hidden">
+          <h5 class="modal-title text-truncate" id="previewFileName">Document Preview</h5>
+          <span id="previewFileType" class="badge"></span>
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-2 flex-shrink-0">
+          <a id="prevDriveLink" href="#" target="_blank" class="btn-dms-secondary btn-sm">
+            <i class="fa-brands fa-google-drive me-1"></i>
+            <span class="d-none d-sm-inline">Open in Drive</span>
+          </a>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+      </div>
+      <div class="modal-body preview-modal-body p-0">
+        <div class="preview-layout">
+          <!-- iframe pane -->
+          <div class="preview-frame-pane">
+            <div id="previewFrameWrap" class="preview-frame-wrap">
+              <iframe id="previewFrame" src="" frameborder="0" allowfullscreen class="preview-iframe"></iframe>
+            </div>
+            <div id="noPreviewMsg" class="no-preview-msg" style="display:none">
+              <i class="fa-solid fa-file fa-3x mb-3" style="color:var(--border-light)"></i>
+              <div>Preview not available</div>
+            </div>
+          </div>
+          <!-- metadata pane -->
+          <div class="preview-meta-pane">
+            <div class="meta-section">
+              <div class="meta-label">Subject</div>
+              <div id="prevSubject" class="meta-value"></div>
+            </div>
+            <div class="meta-section">
+              <div class="meta-label">Offices</div>
+              <div id="prevOffices" class="meta-value"></div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-section">
+                <div class="meta-label">Document Date</div>
+                <div id="prevCreated" class="meta-value"></div>
+              </div>
+              <div class="meta-section">
+                <div class="meta-label">Registered</div>
+                <div id="prevAdded" class="meta-value"></div>
+              </div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-section">
+                <div class="meta-label">Version</div>
+                <div id="prevVersion" class="meta-value"></div>
+              </div>
+              <div class="meta-section">
+                <div class="meta-label">Visibility</div>
+                <div id="prevVisibility" class="meta-value"></div>
+              </div>
+            </div>
+            <div class="meta-section">
+              <div class="meta-label">Registered By</div>
+              <div id="prevUploader" class="meta-value"></div>
+            </div>
+            <div class="meta-section">
+              <div class="meta-label">Last Modified</div>
+              <div id="prevModified" class="meta-value small"></div>
+            </div>
+            <div class="meta-section">
+              <div class="meta-label">Tags</div>
+              <div id="prevTags" class="meta-value"></div>
+            </div>
+            <div class="meta-section">
+              <div class="meta-label">People Involved</div>
+              <div id="prevPeople" class="meta-value"></div>
+            </div>
+            <div class="meta-section">
+              <div class="meta-label">Notes</div>
+              <div id="prevNotes" class="meta-value small text-muted"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Document Modal ── -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 class="modal-title">Delete Document</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="deleteDocName"></strong>? This cannot be undone.</p>
+      </div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmDeleteBtn" class="btn-dms-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Approve User Modal ── -->
+<div class="modal fade" id="approveUserModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 class="modal-title">Approve Registration</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="approveUserId" />
+        <p>Approving: <strong id="approveUserName"></strong></p>
+        <p class="text-muted small">Office: <span id="approveUserOffice"></span></p>
+        <div class="mb-3">
+          <label class="form-label">Assign User Type</label>
+          <select id="approveUserTypeSelect" class="dms-select"></select>
+        </div>
+      </div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-dms-primary" onclick="handleApproveSubmit()">Approve</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit User Modal ── -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 class="modal-title">Edit User</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editUserForm" novalidate>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="editUserName" class="dms-input" required />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email</label>
+              <input type="email" id="editUserEmail" class="dms-input" readonly />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Username</label>
+              <input type="text" id="editUserUsername" class="dms-input" readonly />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Office</label>
+              <select id="editUserOffice" class="dms-select"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">User Type</label>
+              <select id="editUserType" class="dms-select"></select>
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="editUserActive" />
+                <label class="form-check-label" for="editUserActive">Account is Active</label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-dms-primary"
+          onclick="document.getElementById('editUserForm').requestSubmit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete User Modal ── -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 class="modal-title">Delete User</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Delete user <strong id="deleteUserName"></strong>? This cannot be undone.</p>
+      </div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmDeleteUserBtn" class="btn-dms-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tag Modal ── -->
+<div class="modal fade" id="tagModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 id="tagModalTitle" class="modal-title">Add Tag</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="tagForm" novalidate>
+          <label class="form-label">Tag Name</label>
+          <input type="text" id="tagNameInput" class="dms-input" placeholder="e.g. Finance" required />
+        </form>
+      </div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-dms-primary"
+          onclick="document.getElementById('tagForm').requestSubmit()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Tag Modal ── -->
+<div class="modal fade" id="deleteTagModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 class="modal-title">Delete Tag</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body"><p>Delete tag <strong id="deleteTagName"></strong>?</p></div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmDeleteTagBtn" class="btn-dms-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Office Modal ── -->
+<div class="modal fade" id="officeModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 id="officeModalTitle" class="modal-title">Add Office</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="officeForm" novalidate>
+          <label class="form-label">Office Name</label>
+          <input type="text" id="officeNameInput" class="dms-input" placeholder="e.g. Finance Department" required />
+        </form>
+      </div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-dms-primary"
+          onclick="document.getElementById('officeForm').requestSubmit()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Office Modal ── -->
+<div class="modal fade" id="deleteOfficeModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content dms-modal">
+      <div class="modal-header dms-modal-header">
+        <h5 class="modal-title">Delete Office</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body"><p>Delete office <strong id="deleteOfficeName"></strong>?</p></div>
+      <div class="modal-footer dms-modal-footer">
+        <button type="button" class="btn-dms-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmDeleteOfficeBtn" class="btn-dms-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/audit.js"></script>
+<script src="js/offices.js"></script>
+<script src="js/tags.js"></script>
+<script src="js/users.js"></script>
+<script src="js/documents.js"></script>
+<script src="js/search.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,217 +1,236 @@
 /**
- * app.js — Main application bootstrap and navigation controller
+ * app.js — Main app bootstrap, navigation, dashboard
  */
 
-// ─────────────────────────────────────────────────────────
-// View / tab management
-// ─────────────────────────────────────────────────────────
-const VIEWS = { DOCUMENTS: "documents", PEOPLE: "people", DASHBOARD: "dashboard" };
-let currentView = VIEWS.DOCUMENTS;
+// ── Views ─────────────────────────────────────────────────
+const VIEWS = ["documents","users","tags","offices","audit","dashboard"];
+let _viewLoaded = {};
 
 function showView(view) {
-  currentView = view;
-  document.querySelectorAll(".app-view").forEach(v => v.classList.remove("active"));
-  const el = document.getElementById("view-" + view);
-  if (el) el.classList.add("active");
-  document.querySelectorAll(".nav-link[data-view]").forEach(a => {
-    a.classList.toggle("active", a.dataset.view === view);
+  VIEWS.forEach(v => {
+    const el = document.getElementById("view-"+v);
+    if (el) el.classList.toggle("active", v===view);
   });
-  if (view === VIEWS.PEOPLE && allPeople.length === 0) fetchPeople();
-  if (view === VIEWS.DASHBOARD) renderDashboard();
+  document.querySelectorAll(".nav-link[data-view]").forEach(a =>
+    a.classList.toggle("active", a.dataset.view===view)
+  );
+  // Close mobile sidebar
+  document.getElementById("sidebar")?.classList.remove("sidebar-open");
+  document.getElementById("sidebarOverlay")?.classList.remove("active");
+
+  // Lazy load view data
+  if (!_viewLoaded[view]) {
+    _viewLoaded[view] = true;
+    if (view==="users")     { fetchUsers(); }
+    if (view==="tags")      { fetchTags().then(renderTagsTable); }
+    if (view==="offices")   { fetchOffices().then(renderOfficesTable); }
+    if (view==="audit")     { renderAuditLog(); }
+    if (view==="dashboard") { renderDashboard(); }
+  }
 }
 
-// ─────────────────────────────────────────────────────────
-// Dashboard rendering
-// ─────────────────────────────────────────────────────────
+// ── Sidebar — show/hide items per role ───────────────────
+function setupSidebarForRole(user) {
+  // Show user name + role
+  const nameEl  = document.getElementById("sidebarUserName");
+  const roleEl  = document.getElementById("sidebarUserRole");
+  const officeEl= document.getElementById("sidebarUserOffice");
+  const avatarEl= document.getElementById("sidebarAvatar");
+  if (nameEl)   nameEl.textContent   = user.name || "User";
+  if (roleEl)   roleEl.textContent   = USER_TYPE_LABELS[user.userType] || user.userType;
+  if (officeEl) officeEl.textContent = user.office || "";
+  if (avatarEl) {
+    avatarEl.textContent   = initials(user.name);
+    avatarEl.style.background = avatarColor(user.name);
+  }
+  if (roleEl) {
+    roleEl.style.color = USER_TYPE_COLORS[user.userType]||"#94a3b8";
+  }
+
+  // Hide admin-only nav items
+  const adminOnly = document.querySelectorAll("[data-role='admin']");
+  adminOnly.forEach(el => el.style.display = isAdminPlus(user) ? "" : "none");
+
+  const superOnly = document.querySelectorAll("[data-role='super']");
+  superOnly.forEach(el => el.style.display = isSuperPlus(user) ? "" : "none");
+
+  const sysOnly = document.querySelectorAll("[data-role='system']");
+  sysOnly.forEach(el => el.style.display = isSystemAdmin(user) ? "" : "none");
+
+  // Hide "Register Document" for guests
+  const regDocBtn = document.getElementById("regDocBtn");
+  if (regDocBtn) regDocBtn.style.display = isRegularPlus(user) ? "" : "none";
+}
+
+// ── Dashboard ─────────────────────────────────────────────
 function renderDashboard() {
-  document.getElementById("dashTotal").textContent  = allDocuments.length;
-  document.getElementById("dashPeople").textContent = allPeople.length || "—";
+  const user = getCurrentUser();
+
+  // Visible docs for this user
+  const visibleDocs = allDocuments.filter(d => canViewDoc(d, user));
+
+  document.getElementById("dashTotal")?.setAttribute &&
+  (document.getElementById("dashTotal").textContent = visibleDocs.length);
+  document.getElementById("dashUsers") &&
+  (document.getElementById("dashUsers").textContent = allUsers.filter(u=>u.isActive).length||"—");
+  document.getElementById("dashPending") &&
+  (document.getElementById("dashPending").textContent =
+    allUsers.filter(u=>u.status==="pending").length||"0");
 
   const typeCounts = {};
   const deptCounts = {};
-
-  allDocuments.forEach(doc => {
-    const t = doc.fileType || "other";
-    typeCounts[t] = (typeCounts[t] || 0) + 1;
-    const d = doc.departmentOrOffice || "Unknown";
-    deptCounts[d] = (deptCounts[d] || 0) + 1;
+  visibleDocs.forEach(doc => {
+    const t = doc.fileType||"other";
+    typeCounts[t] = (typeCounts[t]||0)+1;
+    (doc.offices||["Unknown"]).forEach(o => { deptCounts[o]=(deptCounts[o]||0)+1; });
   });
 
+  // Type bar
   const typeBar = document.getElementById("typeBreakdownBar");
-  const typeColors = { pdf:"#e74c5e", document:"#3cb4f5", spreadsheet:"#5bc9a3",
-                       presentation:"#f59c3c", image:"#a78bfa", video:"#f97316", other:"#94a3b8" };
-  const totalDocs = allDocuments.length || 1;
-  typeBar.innerHTML = Object.entries(typeCounts).map(([type, count]) =>
-    `<div class="dash-bar-segment tooltip-wrap" style="width:${(count/totalDocs*100).toFixed(1)}%; background:${typeColors[type]||'#94a3b8'}"
-         title="${type}: ${count}">
-       <span class="tooltip-text">${type}: ${count}</span>
-     </div>`
-  ).join("");
+  const typeColors={pdf:"#e74c5e",document:"#3cb4f5",spreadsheet:"#5bc9a3",
+                    presentation:"#f59c3c",image:"#a78bfa",video:"#f97316",other:"#94a3b8"};
+  const total = visibleDocs.length||1;
+  if (typeBar) typeBar.innerHTML = Object.entries(typeCounts).map(([t,c])=>
+    `<div class="dash-bar-segment tooltip-wrap" style="width:${(c/total*100).toFixed(1)}%;background:${typeColors[t]||'#94a3b8'}">
+       <span class="tooltip-text">${t}: ${c}</span></div>`).join("");
 
+  // Dept list
   const deptList = document.getElementById("deptBreakdownList");
-  const sortedDepts = Object.entries(deptCounts).sort((a,b) => b[1]-a[1]);
-  deptList.innerHTML = sortedDepts.map(([dept, count]) => `
-    <div class="dash-dept-row">
-      <span>${escapeHtml(dept)}</span>
-      <div class="d-flex align-items-center gap-2">
-        <div class="dash-mini-bar" style="width:${Math.round(count/totalDocs*120)}px"></div>
-        <span class="fw-bold">${count}</span>
-      </div>
-    </div>`
-  ).join("") || "<p class='text-muted small'>No data</p>";
+  if (deptList) deptList.innerHTML = Object.entries(deptCounts)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([d,c])=>`
+      <div class="dash-dept-row">
+        <span>${escapeHtml(d)}</span>
+        <div class="d-flex align-items-center gap-2">
+          <div class="dash-mini-bar" style="width:${Math.round(c/total*120)}px"></div>
+          <span class="fw-bold">${c}</span>
+        </div>
+      </div>`).join("") || "<p class='text-muted small'>No data.</p>";
 
+  // Recent docs
   const recentList = document.getElementById("recentDocsList");
-  const recent = [...allDocuments]
-    .sort((a,b) => {
-      const at = a.dateAdded?.toDate?.()?.getTime() || 0;
-      const bt = b.dateAdded?.toDate?.()?.getTime() || 0;
-      return bt - at;
-    }).slice(0, 6);
-
-  recentList.innerHTML = recent.map(doc => `
-    <div class="recent-doc-item" onclick="showView('documents'); setTimeout(()=>openPreviewModal('${doc.id}'),200)">
-      <div class="file-icon-wrap file-type-${doc.fileType||'other'} small-icon">
-        <i class="fa-solid ${fileTypeIcon(doc.fileType)} small"></i>
-      </div>
-      <div class="flex-grow-1 overflow-hidden">
-        <div class="text-truncate fw-medium">${escapeHtml(doc.fileName||"Untitled")}</div>
-        <div class="text-muted small">${escapeHtml(doc.departmentOrOffice||"")} · ${formatDate(doc.dateAdded)}</div>
-      </div>
-      <span class="type-badge ${fileTypeBadgeColor(doc.fileType)}">${escapeHtml(doc.fileType||"other")}</span>
-    </div>`
-  ).join("") || "<p class='text-muted small'>No documents yet.</p>";
-}
-
-// ─────────────────────────────────────────────────────────
-// Firebase not-configured banner
-// ─────────────────────────────────────────────────────────
-function showNotConfiguredBanner() {
-  // Update Firebase status indicator
-  const statusEl = document.getElementById("firebaseStatus");
-  if (statusEl) {
-    statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>Not Configured';
-    statusEl.className = "firebase-status status-warn";
-  }
-
-  // Show a prominent setup banner above the table
-  const banner = document.getElementById("setupBanner");
-  if (banner) banner.style.display = "flex";
-
-  // Show empty state with a helpful message
-  const emptyTitle = document.querySelector("#emptyState .empty-title");
-  const emptySub   = document.querySelector("#emptyState .empty-sub");
-  if (emptyTitle) emptyTitle.textContent = "Firebase not configured";
-  if (emptySub)   emptySub.innerHTML =
-    'Open <code>js/firebase-config.js</code> and replace the placeholder values ' +
-    'with your real Firebase credentials, then push to GitHub again.';
-  document.getElementById("emptyState").style.display  = "flex";
-  document.getElementById("tableWrapper").style.display = "none";
-  document.getElementById("docCount").textContent = "0 documents";
-}
-
-// ─────────────────────────────────────────────────────────
-// Firebase connection status check
-// ─────────────────────────────────────────────────────────
-async function checkFirebaseConnection() {
-  const statusEl = document.getElementById("firebaseStatus");
-  if (!FIREBASE_CONFIGURED || !db) {
-    if (statusEl) {
-      statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>Not Configured';
-      statusEl.className = "firebase-status status-warn";
-    }
-    return false;
-  }
-  try {
-    await db.collection(COLLECTIONS.DOCUMENTS).limit(1).get();
-    if (statusEl) {
-      statusEl.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Firebase Connected';
-      statusEl.className = "firebase-status status-ok";
-    }
-    return true;
-  } catch (err) {
-    if (statusEl) {
-      statusEl.innerHTML = '<i class="fa-solid fa-circle-exclamation me-1"></i>Connection Error';
-      statusEl.className = "firebase-status status-warn";
-    }
-    console.error("Firebase connection error:", err.message);
-    return false;
+  if (recentList) {
+    const recent = [...visibleDocs]
+      .sort((a,b)=>(b.dateAdded?.toDate?.()?.getTime()||0)-(a.dateAdded?.toDate?.()?.getTime()||0))
+      .slice(0,6);
+    recentList.innerHTML = recent.map(doc=>`
+      <div class="recent-doc-item" onclick="showView('documents');setTimeout(()=>openPreviewModal('${doc.id}'),200)">
+        <div class="file-icon-wrap file-type-${doc.fileType||'other'} small-icon">
+          <i class="fa-solid ${fileTypeIcon(doc.fileType)}"></i>
+        </div>
+        <div class="flex-grow-1 overflow-hidden">
+          <div class="text-truncate fw-medium">${escapeHtml(doc.fileName||"Untitled")}</div>
+          <div class="text-muted small">${escapeHtml((doc.offices||[]).join(", ")||"")} · ${formatDate(doc.dateAdded)}</div>
+        </div>
+        <span class="type-badge ${fileTypeBadgeClass(doc.fileType)}">${escapeHtml(doc.fileType||"other")}</span>
+      </div>`).join("") || "<p class='text-muted small'>No documents.</p>";
   }
 }
 
-// ─────────────────────────────────────────────────────────
-// Sidebar toggle (mobile)
-// ─────────────────────────────────────────────────────────
+// ── Offline indicator ─────────────────────────────────────
+function updateOnlineStatus() {
+  const el = document.getElementById("onlineStatus");
+  if (!el) return;
+  if (navigator.onLine) {
+    el.innerHTML = '<i class="fa-solid fa-wifi text-success me-1"></i><span>Online</span>';
+    el.className = "online-indicator online";
+  } else {
+    el.innerHTML = '<i class="fa-solid fa-wifi-slash text-warning me-1"></i><span>Offline</span>';
+    el.className = "online-indicator offline";
+  }
+}
+
+// ── Mobile sidebar ────────────────────────────────────────
 function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("sidebar-open");
-  document.getElementById("sidebarOverlay").classList.toggle("active");
+  document.getElementById("sidebar")?.classList.toggle("sidebar-open");
+  document.getElementById("sidebarOverlay")?.classList.toggle("active");
 }
 
-// ─────────────────────────────────────────────────────────
-// Bootstrap
-// ─────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", async () => {
-  // Safety net: always dismiss loading after 5 seconds no matter what
-  const loadingTimeout = setTimeout(() => {
+// ── PWA: register service worker ─────────────────────────
+function registerSW() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js")
+      .then(r => console.log("SW registered:", r.scope))
+      .catch(e => console.warn("SW registration failed:", e));
+  }
+}
+
+// ── Bootstrap ────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  if (!FIREBASE_CONFIGURED) {
     showLoading(false);
-    console.warn("CIE Vault: Loading timeout reached. Check Firebase configuration.");
-  }, 5000);
-
-  // Wire up navigation
-  document.querySelectorAll(".nav-link[data-view]").forEach(link => {
-    link.addEventListener("click", e => {
-      e.preventDefault();
-      showView(link.dataset.view);
-      document.getElementById("sidebar").classList.remove("sidebar-open");
-      document.getElementById("sidebarOverlay").classList.remove("active");
-    });
-  });
-
-  // Wire up column sorting
-  document.querySelectorAll(".sortable").forEach(th => {
-    th.addEventListener("click", () => sortDocuments(th.dataset.col));
-  });
-
-  // Wire up search/filter listeners
-  initSearchListeners();
-
-  // Form submit handlers
-  document.getElementById("documentForm")?.addEventListener("submit", handleDocumentFormSubmit);
-  document.getElementById("personForm")?.addEventListener("submit", handlePersonFormSubmit);
-  document.getElementById("driveUrlField")?.addEventListener("input", onDriveUrlInput);
-  document.getElementById("clearAllFiltersBtn")?.addEventListener("click", clearAllFilters);
-  document.getElementById("peopleSearchInput")?.addEventListener("input", e => searchPeople(e.target.value));
-  document.getElementById("sidebarOverlay")?.addEventListener("click", toggleSidebar);
-
-  // Clear preview iframe on modal close
-  document.getElementById("previewModal")?.addEventListener("hidden.bs.modal", () => {
-    document.getElementById("previewFrame").src = "";
-  });
-
-  // ── Main init sequence ──
-  if (!FIREBASE_CONFIGURED || !db) {
-    // Firebase not set up yet — show the app in demo/empty state
-    showNotConfiguredBanner();
-    clearTimeout(loadingTimeout);
-    showLoading(false);
-    showView(VIEWS.DOCUMENTS);
+    document.getElementById("configBanner")?.style && (document.getElementById("configBanner").style.display="flex");
     return;
   }
 
-  try {
-    const connected = await checkFirebaseConnection();
-    if (connected) {
-      await seedSampleData();
-      await fetchDocuments();
-    } else {
-      showNotConfiguredBanner();
+  registerSW();
+
+  // Online/offline events
+  window.addEventListener("online",  updateOnlineStatus);
+  window.addEventListener("offline", updateOnlineStatus);
+  updateOnlineStatus();
+
+  // Auth guard — only proceeds if user is logged in and active
+  initAuthGuard(async (user) => {
+    setupSidebarForRole(user);
+
+    // Load shared data in parallel
+    await Promise.all([
+      fetchOffices(),
+      fetchTags(),
+      fetchDocuments()
+    ]);
+
+    // Load users for admin+
+    if (isAdminPlus(user)) {
+      await fetchUsers();
     }
-  } catch (err) {
-    console.error("Startup error:", err);
-    showToast("Startup error: " + err.message, "error");
-    showNotConfiguredBanner();
-  } finally {
-    clearTimeout(loadingTimeout);
-    showLoading(false);
-    showView(VIEWS.DOCUMENTS);
-  }
+
+    // Default view
+    showView("documents");
+    applyFilters();
+
+    // Wire up nav links
+    document.querySelectorAll(".nav-link[data-view]").forEach(link =>
+      link.addEventListener("click", e => { e.preventDefault(); showView(link.dataset.view); })
+    );
+
+    // Wire up form submissions
+    document.getElementById("documentForm")?.addEventListener("submit", handleDocFormSubmit);
+    document.getElementById("officeForm")?.addEventListener("submit",   handleOfficeFormSubmit);
+    document.getElementById("tagForm")?.addEventListener("submit",      handleTagFormSubmit);
+    document.getElementById("editUserForm")?.addEventListener("submit", handleEditUserSubmit);
+
+    // Drive URL auto-detect
+    document.getElementById("driveUrlField")?.addEventListener("input", onDriveUrlInput);
+
+    // Search + filter
+    initSearchListeners();
+
+    // Tag autocomplete
+    initTagAutocomplete("tagsInput","tagPillsWrap","tagSuggestions");
+
+    // People search in modal
+    document.getElementById("peopleSearch")?.addEventListener("input", e => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll("#docPeopleWrap .checkbox-pill").forEach(pill => {
+        const name = pill.textContent.trim().toLowerCase();
+        pill.style.display = name.includes(q) ? "" : "none";
+      });
+    });
+
+    // Sidebar overlay
+    document.getElementById("sidebarOverlay")?.addEventListener("click", toggleSidebar);
+
+    // Preview modal cleanup
+    document.getElementById("previewModal")?.addEventListener("hidden.bs.modal", () => {
+      document.getElementById("previewFrame").src = "";
+    });
+
+    // Logout
+    document.getElementById("logoutBtn")?.addEventListener("click", handleLogout);
+
+    // Pending approvals quick panel refresh
+    if (isSuperPlus(user)) renderPendingPanel();
+  });
 });
