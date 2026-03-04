@@ -59,7 +59,7 @@ const SAMPLE_PEOPLE = [
 const SAMPLE_DOCUMENTS = [
   {
     driveFileId: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-    driveFileLink: "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+    driveFileLink: "https://drive.google.com/file/d/1pvPe4YA0jqrZpyi8Mbogy3XK6P72U3AJ/view?usp=sharing",
     fileName: "Q1 Budget Report 2024.xlsx",
     fileType: "spreadsheet",
     dateCreated: "2024-01-15",
@@ -75,7 +75,7 @@ const SAMPLE_DOCUMENTS = [
   },
   {
     driveFileId: "1Mf9GBpiNmHpJxDrLAOIK3-yWnRTkjPpV",
-    driveFileLink: "https://drive.google.com/file/d/1Mf9GBpiNmHpJxDrLAOIK3-yWnRTkjPpV",
+    driveFileLink: "https://drive.google.com/file/d/1c_SYiort0wgzqhK-Frz9Gu-voFe7C7w7/view?usp=sharing",
     fileName: "Employee Handbook 2024.pdf",
     fileType: "pdf",
     dateCreated: "2024-01-02",
