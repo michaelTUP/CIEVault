@@ -1,24 +1,15 @@
 /**
  * firebase-config.js
  * ─────────────────────────────────────────────────────────
- * Firebase project configuration and initialization.
- *
- * ► HOW TO SET UP YOUR OWN FIREBASE PROJECT:
+ * ► HOW TO CONFIGURE:
  *   1. Go to https://console.firebase.google.com
- *   2. Create a new project (or use an existing one)
- *   3. Project Settings → General → Your Apps → Add Web App
- *   4. Copy your firebaseConfig object and replace below
- *   5. Firestore Database → Create database (test mode to start)
+ *   2. Project Settings → Your Apps → Add Web App (</>)
+ *   3. Copy the firebaseConfig object and paste it below
+ *   4. In Firestore Database, create a database in "test mode"
  * ─────────────────────────────────────────────────────────
  */
 
 // ★ REPLACE THIS WITH YOUR OWN FIREBASE CONFIG ★
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCfg6F2mkxoJxl7_UsPUoZDRkzM2Oo_3Jw",
   authDomain: "cievault.firebaseapp.com",
@@ -28,9 +19,25 @@ const firebaseConfig = {
   appId: "1:428635719174:web:1183f34075bfb94693e587"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// ─────────────────────────────────────────────────────────
+// Detect whether the config has been filled in
+// ─────────────────────────────────────────────────────────
+const FIREBASE_CONFIGURED = !Object.values(firebaseConfig).some(v =>
+  typeof v === "string" && v.startsWith("YOUR_")
+);
+
+let db = null;
+
+if (FIREBASE_CONFIGURED) {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+} else {
+  console.warn(
+    "%c DocVault: Firebase not configured yet. ",
+    "background:#f0a033;color:#0c1117;font-weight:bold;padding:2px 6px;border-radius:3px",
+    "\nOpen js/firebase-config.js and replace the placeholder values with your real Firebase credentials."
+  );
+}
 
 // Collection names
 const COLLECTIONS = {
@@ -42,11 +49,11 @@ const COLLECTIONS = {
 // Sample seed data
 // ─────────────────────────────────────────────────────────
 const SAMPLE_PEOPLE = [
-  { name: "Maria Santos",    department: "Finance",    position: "Finance Manager",      email: "m.santos@company.com",    status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Juan dela Cruz",  department: "IT",         position: "Systems Administrator",email: "j.delacruz@company.com",  status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Ana Reyes",       department: "HR",         position: "HR Officer",           email: "a.reyes@company.com",     status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Carlos Mendoza",  department: "Operations", position: "Operations Lead",      email: "c.mendoza@company.com",   status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Luz Villanueva",  department: "Legal",      position: "Legal Counsel",        email: "l.villanueva@company.com",status: "Active", dateAdded: firebase.firestore.Timestamp.now() }
+  { name: "Maria Santos",    department: "Finance",    position: "Finance Manager",       email: "m.santos@company.com",    status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
+  { name: "Juan dela Cruz",  department: "IT",         position: "Systems Administrator", email: "j.delacruz@company.com",  status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
+  { name: "Ana Reyes",       department: "HR",         position: "HR Officer",            email: "a.reyes@company.com",     status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
+  { name: "Carlos Mendoza",  department: "Operations", position: "Operations Lead",       email: "c.mendoza@company.com",   status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
+  { name: "Luz Villanueva",  department: "Legal",      position: "Legal Counsel",         email: "l.villanueva@company.com",status: "Active", dateAdded: firebase.firestore.Timestamp.now() }
 ];
 
 const SAMPLE_DOCUMENTS = [
@@ -134,8 +141,10 @@ const SAMPLE_DOCUMENTS = [
 
 /**
  * Seeds Firestore with sample data if the documents collection is empty.
+ * Does nothing if Firebase is not configured.
  */
 async function seedSampleData() {
+  if (!FIREBASE_CONFIGURED || !db) return;
   try {
     const snap = await db.collection(COLLECTIONS.DOCUMENTS).limit(1).get();
     if (!snap.empty) return;
@@ -146,6 +155,6 @@ async function seedSampleData() {
     await batch.commit();
     console.log("Sample data seeded.");
   } catch (err) {
-    console.warn("Seed skipped (Firebase not configured):", err.message);
+    console.warn("Seed failed:", err.message);
   }
 }
