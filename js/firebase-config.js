@@ -13,17 +13,23 @@
  */
 
 // ★ REPLACE THIS WITH YOUR OWN FIREBASE CONFIG ★
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCfg6F2mkxoJxl7_UsPUoZDRkzM2Oo_3Jw",
+  authDomain: "cievault.firebaseapp.com",
+  projectId: "cievault",
+  storageBucket: "cievault.firebasestorage.app",
+  messagingSenderId: "428635719174",
+  appId: "1:428635719174:web:1183f34075bfb94693e587"
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // Collection names
