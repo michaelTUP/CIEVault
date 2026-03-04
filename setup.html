@@ -297,35 +297,48 @@
       return;
     }
 
-    // Step 1 — Firebase OK
+    let snap;
+    try {
+      // Force server fetch with hard 10s timeout — bypasses persistence hang
+      snap = await Promise.race([
+        db.collection("users")
+          .where("userType","==","systemAdmin")
+          .limit(1)
+          .get({ source: "server" }),
+        new Promise((_,reject) =>
+          setTimeout(() => reject(new Error(
+            "Connection timed out. Check your Firebase credentials and that " +
+            "Firestore database is created in the Firebase console."
+          )), 10000)
+        )
+      ]);
+    } catch(err) {
+      document.getElementById("chkFirebase").innerHTML =
+        `<i class="fa-solid fa-circle-xmark check-fail"></i> ${err.message}`;
+      document.getElementById("chkAdmin").style.display = "flex";
+      document.getElementById("chkAdmin").innerHTML =
+        `<i class="fa-solid fa-triangle-exclamation" style="color:var(--warning)"></i> ` +
+        `Make sure: (1) <code>js/firebase-config.js</code> has your real credentials, ` +
+        `(2) Firestore database is created in Firebase Console → Build → Firestore Database.`;
+      return;
+    }
+
+    // Firebase connected
     document.getElementById("chkFirebase").innerHTML =
       '<i class="fa-solid fa-circle-check check-ok"></i> Firebase connected';
     document.getElementById("chkAdmin").style.display = "flex";
+    document.getElementById("chkAdmin").innerHTML = snap.empty
+      ? '<i class="fa-solid fa-circle-check check-ok"></i> No System Admin found — setup required'
+      : '<i class="fa-solid fa-circle-check check-ok"></i> System Admin already exists';
 
-    try {
-      // Check if any systemAdmin already exists
-      const snap = await db.collection("users")
-        .where("userType","==","systemAdmin").limit(1).get();
+    await new Promise(r => setTimeout(r, 700));
 
-      document.getElementById("chkAdmin").innerHTML =
-        snap.empty
-          ? '<i class="fa-solid fa-circle-check check-ok"></i> No System Admin found — setup required'
-          : '<i class="fa-solid fa-circle-check check-ok"></i> System Admin already exists';
-
-      await new Promise(r => setTimeout(r, 800)); // brief pause so user can read
-
-      if (!snap.empty) {
-        // Already configured — lock the page
-        setStep(3);
-        showSection("stepAlready");
-      } else {
-        // Proceed to creation form
-        setStep(2);
-        showSection("stepCreate");
-      }
-    } catch(err) {
-      document.getElementById("chkAdmin").innerHTML =
-        `<i class="fa-solid fa-circle-xmark check-fail"></i> Error: ${err.message}`;
+    if (!snap.empty) {
+      setStep(3);
+      showSection("stepAlready");
+    } else {
+      setStep(2);
+      showSection("stepCreate");
     }
   }
 
