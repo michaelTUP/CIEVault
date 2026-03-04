@@ -72,7 +72,7 @@ function renderDocumentTable(docs) {
   empty.style.display = "none";
   tableWrap.style.display = "block";
   document.getElementById("docCount").textContent =
-    `${docs.length} document${docs.length !== 1 ? "s" : ""}`;
+    ${docs.length} document${docs.length !== 1 ? "s" : ""};
 
   tbody.innerHTML = docs.map((doc, i) => `
     <tr class="doc-row animate-row" style="animation-delay:${i * 30}ms"
@@ -94,10 +94,10 @@ function renderDocumentTable(docs) {
       <td class="td-dept">${escapeHtml(doc.departmentOrOffice || "—")}</td>
       <td class="td-tags">
         ${(doc.tags || []).slice(0, 3).map(t =>
-          `<span class="tag-pill">${escapeHtml(t)}</span>`
+          <span class="tag-pill">${escapeHtml(t)}</span>
         ).join("")}
         ${(doc.tags || []).length > 3
-          ? `<span class="tag-pill tag-more">+${doc.tags.length - 3}</span>` : ""}
+          ? <span class="tag-pill tag-more">+${doc.tags.length - 3}</span> : ""}
       </td>
       <td class="td-visibility">
         <span class="vis-badge ${visibilityBadgeColor(doc.visibility)}">
@@ -152,7 +152,7 @@ function openPreviewModal(id) {
   // Header
   document.getElementById("previewFileName").textContent = doc.fileName || "Untitled";
   document.getElementById("previewFileType").textContent = doc.fileType || "other";
-  document.getElementById("previewFileType").className   = `badge ${fileTypeBadgeColor(doc.fileType)} ms-2`;
+  document.getElementById("previewFileType").className   = badge ${fileTypeBadgeColor(doc.fileType)} ms-2;
 
   // Metadata panel
   document.getElementById("prevSubject").textContent    = doc.subject || "—";
@@ -166,7 +166,7 @@ function openPreviewModal(id) {
 
   // Tags
   document.getElementById("prevTags").innerHTML =
-    (doc.tags || []).map(t => `<span class="tag-pill">${escapeHtml(t)}</span>`).join("") || "—";
+    (doc.tags || []).map(t => <span class="tag-pill">${escapeHtml(t)}</span>).join("") || "—";
 
   // People
   document.getElementById("prevPeople").innerHTML =
@@ -210,6 +210,9 @@ function openAddModal() {
   document.getElementById("docModalTitle").textContent = "Register Document";
   document.getElementById("saveDocBtn").textContent    = "Save Document";
   document.getElementById("driveUrlRow").style.display = "block";
+  document.getElementById("driveUrlField").required    = true;
+  document.getElementById("driveUrlLabel").innerHTML   =
+    'Google Drive File Link <span style="color:var(--danger)">*</span>';
   document.getElementById("dateCreatedField").value    = todayISO();
   const modal = new bootstrap.Modal(document.getElementById("documentModal"));
   modal.show();
@@ -223,9 +226,18 @@ function openEditModal(id) {
 
   document.getElementById("docModalTitle").textContent = "Edit Document";
   document.getElementById("saveDocBtn").textContent    = "Update Document";
-  document.getElementById("driveUrlRow").style.display = "none"; // URL already stored
 
-  // Populate fields
+  // Show the Drive URL field so the user can update the link
+  document.getElementById("driveUrlRow").style.display = "block";
+  document.getElementById("driveUrlField").required    = true;
+  document.getElementById("driveUrlLabel").innerHTML   =
+    'Google Drive File Link <span style="color:var(--text-muted);font-weight:400">(update if needed)</span>';
+
+  // Pre-fill existing link — triggers the file ID detection preview
+  document.getElementById("driveUrlField").value = doc.driveFileLink || "";
+  if (doc.driveFileLink) onDriveUrlInput();
+
+  // Populate metadata fields
   document.getElementById("fileNameField").value       = doc.fileName || "";
   document.getElementById("fileTypeField").value       = doc.fileType || "other";
   document.getElementById("subjectField").value        = doc.subject || "";
@@ -289,19 +301,15 @@ async function handleDocumentFormSubmit(e) {
     let driveFileId   = "";
     let driveFileLink = "";
 
-    if (!currentEditId) {
-      // New document — extract drive ID from URL
-      const url = document.getElementById("driveUrlField").value.trim();
-      driveFileId   = extractDriveFileId(url) || "";
-      driveFileLink = url;
-      if (!driveFileId) {
-        showToast("Please enter a valid Google Drive link.", "error");
-        return;
-      }
-    } else {
-      const existing = allDocuments.find(d => d.id === currentEditId);
-      driveFileId   = existing?.driveFileId || "";
-      driveFileLink = existing?.driveFileLink || "";
+    // Always read the Drive URL from the field (used for both add and edit)
+    const url = document.getElementById("driveUrlField").value.trim();
+    driveFileId   = extractDriveFileId(url) || "";
+    driveFileLink = url;
+    if (!driveFileId) {
+      showToast("Please enter a valid Google Drive link.", "error");
+      btn.disabled = false;
+      btn.innerHTML = currentEditId ? "Update Document" : "Save Document";
+      return;
     }
 
     const data = {
@@ -377,7 +385,7 @@ function populateSelect(id, values, placeholder) {
   const sel = document.getElementById(id);
   if (!sel) return;
   const current = sel.value;
-  sel.innerHTML = `<option value="">${placeholder}</option>` +
-    values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+  sel.innerHTML = <option value="">${placeholder}</option> +
+    values.map(v => <option value="${escapeHtml(v)}">${escapeHtml(v)}</option>).join("");
   if (current) sel.value = current;
 }
