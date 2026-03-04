@@ -75,7 +75,7 @@ const SAMPLE_DOCUMENTS = [
   },
   {
     driveFileId: "1Mf9GBpiNmHpJxDrLAOIK3-yWnRTkjPpV",
-    driveFileLink: "https://drive.google.com/file/d/1c_SYiort0wgzqhK-Frz9Gu-voFe7C7w7/view?usp=sharing",
+    driveFileLink: "https://drive.google.com/file/d/1pvPe4YA0jqrZpyi8Mbogy3XK6P72U3AJ",
     fileName: "Employee Handbook 2024.pdf",
     fileType: "pdf",
     dateCreated: "2024-01-02",
@@ -93,7 +93,7 @@ const SAMPLE_DOCUMENTS = [
     driveFileId: "1aBcDeFgHiJkLmNoPqRsTuVwXyZ",
     driveFileLink: "https://drive.google.com/file/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ",
     fileName: "IT Infrastructure Upgrade Proposal.docx",
-    fileType: "document",
+    fileType: "pdf",
     dateCreated: "2024-02-10",
     subject: "IT Infrastructure Upgrade Proposal",
     tags: ["IT","infrastructure","proposal","network"],
