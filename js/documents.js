@@ -72,7 +72,7 @@ function renderDocumentTable(docs) {
   empty.style.display = "none";
   tableWrap.style.display = "block";
   document.getElementById("docCount").textContent =
-    ${docs.length} document${docs.length !== 1 ? "s" : ""};
+    `${docs.length} document${docs.length !== 1 ? "s" : ""}`;
 
   tbody.innerHTML = docs.map((doc, i) => `
     <tr class="doc-row animate-row" style="animation-delay:${i * 30}ms"
@@ -94,10 +94,10 @@ function renderDocumentTable(docs) {
       <td class="td-dept">${escapeHtml(doc.departmentOrOffice || "—")}</td>
       <td class="td-tags">
         ${(doc.tags || []).slice(0, 3).map(t =>
-          <span class="tag-pill">${escapeHtml(t)}</span>
+          `<span class="tag-pill">${escapeHtml(t)}</span>`
         ).join("")}
         ${(doc.tags || []).length > 3
-          ? <span class="tag-pill tag-more">+${doc.tags.length - 3}</span> : ""}
+          ? `<span class="tag-pill tag-more">+${doc.tags.length - 3}</span>` : ""}
       </td>
       <td class="td-visibility">
         <span class="vis-badge ${visibilityBadgeColor(doc.visibility)}">
@@ -152,7 +152,7 @@ function openPreviewModal(id) {
   // Header
   document.getElementById("previewFileName").textContent = doc.fileName || "Untitled";
   document.getElementById("previewFileType").textContent = doc.fileType || "other";
-  document.getElementById("previewFileType").className   = badge ${fileTypeBadgeColor(doc.fileType)} ms-2;
+  document.getElementById("previewFileType").className   = `badge ${fileTypeBadgeColor(doc.fileType)} ms-2`;
 
   // Metadata panel
   document.getElementById("prevSubject").textContent    = doc.subject || "—";
@@ -166,7 +166,7 @@ function openPreviewModal(id) {
 
   // Tags
   document.getElementById("prevTags").innerHTML =
-    (doc.tags || []).map(t => <span class="tag-pill">${escapeHtml(t)}</span>).join("") || "—";
+    (doc.tags || []).map(t => `<span class="tag-pill">${escapeHtml(t)}</span>`).join("") || "—";
 
   // People
   document.getElementById("prevPeople").innerHTML =
@@ -385,7 +385,7 @@ function populateSelect(id, values, placeholder) {
   const sel = document.getElementById(id);
   if (!sel) return;
   const current = sel.value;
-  sel.innerHTML = <option value="">${placeholder}</option> +
-    values.map(v => <option value="${escapeHtml(v)}">${escapeHtml(v)}</option>).join("");
+  sel.innerHTML = `<option value="">${placeholder}</option>` +
+    values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
   if (current) sel.value = current;
 }
