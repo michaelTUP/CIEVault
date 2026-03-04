@@ -33,7 +33,7 @@ if (FIREBASE_CONFIGURED) {
   db = firebase.firestore();
 } else {
   console.warn(
-    "%c DocVault: Firebase not configured yet. ",
+    "%c CIE Vault: Firebase not configured yet. ",
     "background:#f0a033;color:#0c1117;font-weight:bold;padding:2px 6px;border-radius:3px",
     "\nOpen js/firebase-config.js and replace the placeholder values with your real Firebase credentials."
   );

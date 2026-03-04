@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Safety net: always dismiss loading after 5 seconds no matter what
   const loadingTimeout = setTimeout(() => {
     showLoading(false);
-    console.warn("DocVault: Loading timeout reached. Check Firebase configuration.");
+    console.warn("CIE Vault: Loading timeout reached. Check Firebase configuration.");
   }, 5000);
 
   // Wire up navigation
