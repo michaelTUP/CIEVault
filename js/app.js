@@ -10,20 +10,12 @@ let currentView = VIEWS.DOCUMENTS;
 
 function showView(view) {
   currentView = view;
-
-  // Hide all views
   document.querySelectorAll(".app-view").forEach(v => v.classList.remove("active"));
-
-  // Show selected view
   const el = document.getElementById("view-" + view);
   if (el) el.classList.add("active");
-
-  // Update nav links
   document.querySelectorAll(".nav-link[data-view]").forEach(a => {
     a.classList.toggle("active", a.dataset.view === view);
   });
-
-  // Lazy-load data
   if (view === VIEWS.PEOPLE && allPeople.length === 0) fetchPeople();
   if (view === VIEWS.DASHBOARD) renderDashboard();
 }
@@ -32,33 +24,19 @@ function showView(view) {
 // Dashboard rendering
 // ─────────────────────────────────────────────────────────
 function renderDashboard() {
-  // Counts
   document.getElementById("dashTotal").textContent  = allDocuments.length;
   document.getElementById("dashPeople").textContent = allPeople.length || "—";
 
   const typeCounts = {};
   const deptCounts = {};
-  const monthCounts = {};
 
   allDocuments.forEach(doc => {
-    // By type
     const t = doc.fileType || "other";
     typeCounts[t] = (typeCounts[t] || 0) + 1;
-
-    // By department
     const d = doc.departmentOrOffice || "Unknown";
     deptCounts[d] = (deptCounts[d] || 0) + 1;
-
-    // By month added
-    let month = "Unknown";
-    if (doc.dateAdded?.toDate) {
-      const dt = doc.dateAdded.toDate();
-      month = dt.toLocaleDateString("en-US", { year:"numeric", month:"short" });
-    }
-    monthCounts[month] = (monthCounts[month] || 0) + 1;
   });
 
-  // Type breakdown bar
   const typeBar = document.getElementById("typeBreakdownBar");
   const typeColors = { pdf:"#e74c5e", document:"#3cb4f5", spreadsheet:"#5bc9a3",
                        presentation:"#f59c3c", image:"#a78bfa", video:"#f97316", other:"#94a3b8" };
@@ -70,7 +48,6 @@ function renderDashboard() {
      </div>`
   ).join("");
 
-  // Department list
   const deptList = document.getElementById("deptBreakdownList");
   const sortedDepts = Object.entries(deptCounts).sort((a,b) => b[1]-a[1]);
   deptList.innerHTML = sortedDepts.map(([dept, count]) => `
@@ -83,7 +60,6 @@ function renderDashboard() {
     </div>`
   ).join("") || "<p class='text-muted small'>No data</p>";
 
-  // Recent documents
   const recentList = document.getElementById("recentDocsList");
   const recent = [...allDocuments]
     .sort((a,b) => {
@@ -107,6 +83,62 @@ function renderDashboard() {
 }
 
 // ─────────────────────────────────────────────────────────
+// Firebase not-configured banner
+// ─────────────────────────────────────────────────────────
+function showNotConfiguredBanner() {
+  // Update Firebase status indicator
+  const statusEl = document.getElementById("firebaseStatus");
+  if (statusEl) {
+    statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>Not Configured';
+    statusEl.className = "firebase-status status-warn";
+  }
+
+  // Show a prominent setup banner above the table
+  const banner = document.getElementById("setupBanner");
+  if (banner) banner.style.display = "flex";
+
+  // Show empty state with a helpful message
+  const emptyTitle = document.querySelector("#emptyState .empty-title");
+  const emptySub   = document.querySelector("#emptyState .empty-sub");
+  if (emptyTitle) emptyTitle.textContent = "Firebase not configured";
+  if (emptySub)   emptySub.innerHTML =
+    'Open <code>js/firebase-config.js</code> and replace the placeholder values ' +
+    'with your real Firebase credentials, then push to GitHub again.';
+  document.getElementById("emptyState").style.display  = "flex";
+  document.getElementById("tableWrapper").style.display = "none";
+  document.getElementById("docCount").textContent = "0 documents";
+}
+
+// ─────────────────────────────────────────────────────────
+// Firebase connection status check
+// ─────────────────────────────────────────────────────────
+async function checkFirebaseConnection() {
+  const statusEl = document.getElementById("firebaseStatus");
+  if (!FIREBASE_CONFIGURED || !db) {
+    if (statusEl) {
+      statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>Not Configured';
+      statusEl.className = "firebase-status status-warn";
+    }
+    return false;
+  }
+  try {
+    await db.collection(COLLECTIONS.DOCUMENTS).limit(1).get();
+    if (statusEl) {
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Firebase Connected';
+      statusEl.className = "firebase-status status-ok";
+    }
+    return true;
+  } catch (err) {
+    if (statusEl) {
+      statusEl.innerHTML = '<i class="fa-solid fa-circle-exclamation me-1"></i>Connection Error';
+      statusEl.className = "firebase-status status-warn";
+    }
+    console.error("Firebase connection error:", err.message);
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────────────────
 // Sidebar toggle (mobile)
 // ─────────────────────────────────────────────────────────
 function toggleSidebar() {
@@ -115,35 +147,20 @@ function toggleSidebar() {
 }
 
 // ─────────────────────────────────────────────────────────
-// Firebase connection status check
-// ─────────────────────────────────────────────────────────
-async function checkFirebaseConnection() {
-  const statusEl = document.getElementById("firebaseStatus");
-  try {
-    await db.collection(COLLECTIONS.DOCUMENTS).limit(1).get();
-    if (statusEl) {
-      statusEl.innerHTML = '<i class="fa-solid fa-circle-check text-success me-1"></i>Firebase Connected';
-      statusEl.className = "firebase-status status-ok";
-    }
-  } catch (err) {
-    if (statusEl) {
-      statusEl.innerHTML = '<i class="fa-solid fa-circle-exclamation text-warning me-1"></i>Configure Firebase';
-      statusEl.className = "firebase-status status-warn";
-    }
-    console.warn("Firebase not connected:", err.message);
-  }
-}
-
-// ─────────────────────────────────────────────────────────
 // Bootstrap
 // ─────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
+  // Safety net: always dismiss loading after 5 seconds no matter what
+  const loadingTimeout = setTimeout(() => {
+    showLoading(false);
+    console.warn("DocVault: Loading timeout reached. Check Firebase configuration.");
+  }, 5000);
+
   // Wire up navigation
   document.querySelectorAll(".nav-link[data-view]").forEach(link => {
     link.addEventListener("click", e => {
       e.preventDefault();
       showView(link.dataset.view);
-      // Close mobile sidebar
       document.getElementById("sidebar").classList.remove("sidebar-open");
       document.getElementById("sidebarOverlay").classList.remove("active");
     });
@@ -154,43 +171,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     th.addEventListener("click", () => sortDocuments(th.dataset.col));
   });
 
-  // Wire up search listeners
+  // Wire up search/filter listeners
   initSearchListeners();
 
-  // Document form submit
-  document.getElementById("documentForm")
-    ?.addEventListener("submit", handleDocumentFormSubmit);
-
-  // Person form submit
-  document.getElementById("personForm")
-    ?.addEventListener("submit", handlePersonFormSubmit);
-
-  // Drive URL input auto-detect
-  document.getElementById("driveUrlField")
-    ?.addEventListener("input", onDriveUrlInput);
-
-  // Clear all filters button
-  document.getElementById("clearAllFiltersBtn")
-    ?.addEventListener("click", clearAllFilters);
-
-  // People search
-  document.getElementById("peopleSearchInput")?.addEventListener("input", e => {
-    searchPeople(e.target.value);
-  });
-
-  // Sidebar overlay click
+  // Form submit handlers
+  document.getElementById("documentForm")?.addEventListener("submit", handleDocumentFormSubmit);
+  document.getElementById("personForm")?.addEventListener("submit", handlePersonFormSubmit);
+  document.getElementById("driveUrlField")?.addEventListener("input", onDriveUrlInput);
+  document.getElementById("clearAllFiltersBtn")?.addEventListener("click", clearAllFilters);
+  document.getElementById("peopleSearchInput")?.addEventListener("input", e => searchPeople(e.target.value));
   document.getElementById("sidebarOverlay")?.addEventListener("click", toggleSidebar);
 
-  // ── Bootstrap modal: clear preview frame when preview modal closes
+  // Clear preview iframe on modal close
   document.getElementById("previewModal")?.addEventListener("hidden.bs.modal", () => {
     document.getElementById("previewFrame").src = "";
   });
 
-  // Initial data load
-  await checkFirebaseConnection();
-  await seedSampleData();
-  await fetchDocuments();
+  // ── Main init sequence ──
+  if (!FIREBASE_CONFIGURED || !db) {
+    // Firebase not set up yet — show the app in demo/empty state
+    showNotConfiguredBanner();
+    clearTimeout(loadingTimeout);
+    showLoading(false);
+    showView(VIEWS.DOCUMENTS);
+    return;
+  }
 
-  // Show default view
-  showView(VIEWS.DOCUMENTS);
+  try {
+    const connected = await checkFirebaseConnection();
+    if (connected) {
+      await seedSampleData();
+      await fetchDocuments();
+    } else {
+      showNotConfiguredBanner();
+    }
+  } catch (err) {
+    console.error("Startup error:", err);
+    showToast("Startup error: " + err.message, "error");
+    showNotConfiguredBanner();
+  } finally {
+    clearTimeout(loadingTimeout);
+    showLoading(false);
+    showView(VIEWS.DOCUMENTS);
+  }
 });
