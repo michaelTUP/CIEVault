@@ -1,4 +1,3 @@
-
 /**
  * auth.js — Login, registration, logout, password reset
  */
