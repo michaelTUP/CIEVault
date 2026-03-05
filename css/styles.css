@@ -11,9 +11,9 @@
   --bg-hover:      #1e2d3d;
   --border:        #1e2d3d;
   --border-light:  #263245;
-  --text-main:     #e2eaf4;
+  --text-main:     #e2eaf4; 
   --text-sub:      #8fa3bc;
-  --text-muted:    #55708a;
+  --text-muted:    #e2eaf4; /* 55708a */
   --accent:        #f0a033;
   --accent-hover:  #e8920a;
   --accent2:       #3cb4f5;
