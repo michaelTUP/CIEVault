@@ -791,13 +791,13 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
 /* ── Fix muted text in dark tables ─────────────────────── */
 .dms-table tbody td,
 .dms-table tbody td.text-muted,
-.dms-table tbody td .text-muted,
+.dms-table tbody td.text-muted,
 .dms-table tbody td small {
   color: var(--text-sub);
 }
 
-.dms-table tbody td .fw-medium,
-.dms-table tbody td .fw-semibold,
-.dms-table tbody td .fw-bold {
+.dms-table tbody td.fw-medium,
+.dms-table tbody td.fw-semibold,
+.dms-table tbody td.fw-bold {
   color: var(--text-main);
 }
