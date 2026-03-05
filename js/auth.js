@@ -178,7 +178,7 @@ function initAuthGuard(onAuthed) {
 // ── Switch between login/register/reset tabs ─────────────
 function switchAuthTab(tab) {
   ["login","register","reset"].forEach(t => {
-    document.getElementById(${t}Form).style.display  = t===tab ? "block" : "none";
+    document.getElementById(`${t}Form`).style.display = t === tab ? "block" : "none";
   });
   document.getElementById("authSubtitle").textContent = {
     login    : "Sign in to your account",
