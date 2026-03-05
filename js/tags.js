@@ -130,7 +130,7 @@ function openEditTagModal(id) {
 
 async function handleTagFormSubmit(e) {
   e.preventDefault();
-  const name = document.getElementById("tagNameInput").value.trim();
+  const name = document.getElementById("tagNameInput").value.trim().toLowerCase();
   if (!name) return;
   const u = getCurrentUser();
   try {

@@ -102,10 +102,17 @@ async function handleOfficeFormSubmit(e) {
   const u = getCurrentUser();
   try {
     if (_editOfficeId) {
+      // Check duplicate on edit (exclude self)
+      const exists = allOffices.find(o =>
+        o.name.toLowerCase() === name.toLowerCase() && o.id !== _editOfficeId);
+      if (exists) { showToast("An office with that name already exists.","warning"); return; }
       await db.collection(C.OFFICES).doc(_editOfficeId).update({ name });
       await logAudit("update","office",_editOfficeId,name,"Office name updated");
       showToast("Office updated.","success");
     } else {
+      // Check duplicate on add
+      const exists = allOffices.find(o => o.name.toLowerCase() === name.toLowerCase());
+      if (exists) { showToast("Office already exists.","warning"); return; }
       const ref = await db.collection(C.OFFICES).add({ name, createdBy: u.id, dateCreated: nowTimestamp() });
       await logAudit("create","office",ref.id,name,"Office added");
       showToast("Office added.","success");
