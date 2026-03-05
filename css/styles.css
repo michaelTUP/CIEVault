@@ -789,11 +789,31 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
   .sidebar.sidebar-open { transform: translateX(0); }
   .sidebar-hamburger { display: flex; }
 
-  .preview-layout { flex-direction: column; height: auto; max-height: calc(100vh - 57px); overflow-y: auto; }
-  .preview-frame-pane { height: 55vw; min-height: 240px; }
-  .preview-meta-pane.open { width: 100%; border-left: none; border-top: 1px solid var(--border); }
-  .meta-toggle-btn { top: auto; bottom: 0; right: 50%; transform: translateX(50%);
-    flex-direction: row; border-radius: 8px 8px 0 0; border-right: 1px solid var(--border-light); border-bottom: none; }
+  /* On mobile — iframe stays full size, meta panel floats OVER it */
+  .preview-layout { flex-direction: row; height: calc(100vh - 57px); position: relative; }
+  .preview-frame-pane { position: absolute; inset: 0; height: 100%; width: 100%; }
+
+  .preview-meta-pane {
+    position: absolute !important;
+    top: 0; right: 0; bottom: 0;
+    width: 0 !important;
+    z-index: 20;
+    box-shadow: -4px 0 24px rgba(0,0,0,.5);
+    border-left: none !important;
+  }
+  .preview-meta-pane.open {
+    width: 280px !important;
+    border-left: 1px solid var(--border) !important;
+  }
+
+  /* Toggle button stays on the right edge */
+  .meta-toggle-btn {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 21;
+  }
 
   .dash-grid { grid-template-columns: 1fr; }
 }
