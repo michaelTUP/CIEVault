@@ -174,6 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthGuard(async (user) => {
     setupSidebarForRole(user);
 
+    const fsEL = document.getElementById("firebaseStatus");
+    if (fsEL) {
+      fsEL.innerHTML = '<i class="fa-solid fa-circle text-success me-1" style="font-size: 8px;"></i>Connected';
+      fsEL.style.color = "#5bc9a3";
+    }
     // Load shared data in parallel
     await Promise.all([
       fetchOffices(),
