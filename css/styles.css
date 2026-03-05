@@ -11,9 +11,9 @@
   --bg-hover:      #1e2d3d;
   --border:        #1e2d3d;
   --border-light:  #263245;
-  --text-main:     #e2eaf4; 
+  --text-main:     #e2eaf4;
   --text-sub:      #8fa3bc;
-  --text-muted:    #55708a; 
+  --text-muted:    #55708a;
   --accent:        #f0a033;
   --accent-hover:  #e8920a;
   --accent2:       #3cb4f5;
@@ -788,16 +788,38 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
   animation: slideIn .3s ease;
 }
 
-/* ── Fix muted text in dark tables ─────────────────────── */
-.dms-table tbody td,
-.dms-table tbody td.text-muted,
-.dms-table tbody td.text-muted,
-.dms-table tbody td small {
-  color: var(--text-sub);
+/* ── Force readable text in all dark tables ─────────────────
+   Bootstrap overrides color with #212529 on table cells.
+   This resets everything to theme-appropriate colors.       */
+.dms-table tbody td {
+  color: var(--text-sub) !important;
 }
-
-.dms-table tbody td.fw-medium,
-.dms-table tbody td.fw-semibold,
-.dms-table tbody td.fw-bold {
-  color: var(--text-main);
+.dms-table tbody td .fw-medium,
+.dms-table tbody td .fw-semibold,
+.dms-table tbody td .fw-bold,
+.dms-table tbody td .filename-text,
+.dms-table tbody td code {
+  color: var(--text-main) !important;
+}
+.dms-table tbody td .text-muted,
+.dms-table tbody td small,
+.dms-table tbody td .filename-sub {
+  color: var(--text-muted) !important;
+}
+/* Badges keep their own colors */
+.dms-table tbody td .type-badge,
+.dms-table tbody td .vis-badge,
+.dms-table tbody td .status-badge,
+.dms-table tbody td .tag-pill {
+  color: inherit;
+}
+/* Action icon buttons */
+.dms-table tbody td .btn-icon-action {
+  color: var(--text-muted) !important;
+}
+.dms-table tbody td .btn-icon-action:hover {
+  color: var(--accent2) !important;
+}
+.dms-table tbody td .btn-icon-action.btn-delete:hover {
+  color: var(--danger) !important;
 }
