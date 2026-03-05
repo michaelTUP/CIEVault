@@ -115,7 +115,7 @@ code { color: var(--accent); background: rgba(240,160,51,.12); padding: 1px 6px;
 /* ════════════════════════════════════════════════════════
    APP LAYOUT
    ════════════════════════════════════════════════════════ */
-.app-body { background: var(--bg-base); overflow: hidden; }
+.app-body { background: var(--bg-base); overflow: hidden; height: 100vh; }
 
 /* ── Sidebar ────────────────────────────────────────────── */
 .sidebar {
@@ -214,8 +214,10 @@ code { color: var(--accent); background: rgba(240,160,51,.12); padding: 1px 6px;
 /* ── Main area ──────────────────────────────────────────── */
 .app-main {
   margin-left: var(--sidebar-w);
-  min-height: 100vh;
+  height: 100vh;
   display: flex; flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ── Topbar ─────────────────────────────────────────────── */
@@ -237,7 +239,7 @@ code { color: var(--accent); background: rgba(240,160,51,.12); padding: 1px 6px;
 .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
 /* ── Views ──────────────────────────────────────────────── */
-.app-view { display: none; padding: 24px 24px 40px; }
+.app-view { display: none; padding: 24px 24px 60px; flex: 1; }
 .app-view.active { display: block; }
 
 .view-header {
@@ -757,7 +759,7 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
 }
 
 @media (max-width: 767px) {
-  .app-view { padding: 16px 14px 40px; }
+  .app-view { padding: 16px 14px 60px; }
   .view-title { font-size: 18px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .filter-bar { flex-direction: column; align-items: stretch; }
