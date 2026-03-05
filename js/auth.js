@@ -57,7 +57,6 @@ async function handleRegister(e) {
   e.preventDefault();
   const name     = document.getElementById("regName").value.trim();
   const email    = document.getElementById("regEmail").value.trim();
-  const username = document.getElementById("regUsername").value.trim();
   const office   = document.getElementById("regOffice").value.trim();
   const password = document.getElementById("regPassword").value;
   const confirm  = document.getElementById("regConfirm").value;
@@ -66,18 +65,15 @@ async function handleRegister(e) {
 
   errEl.textContent = "";
 
+  if (!name || !email)  { errEl.textContent = "Please fill in all required fields."; return; }
+  if (!office)          { errEl.textContent = "Please select your office / department."; return; }
   if (password !== confirm) { errEl.textContent = "Passwords do not match."; return; }
   if (password.length < 6)  { errEl.textContent = "Password must be at least 6 characters."; return; }
-  if (!name || !email || !username) { errEl.textContent = "Please fill in all required fields."; return; }
 
   btn.disabled  = true;
   btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Registering…';
 
   try {
-    // Check username uniqueness
-    const uSnap = await db.collection(C.USERS).where("username","==",username).get();
-    if (!uSnap.empty) throw new Error("Username already taken. Please choose another.");
-
     // Create Firebase Auth account
     const cred = await auth.createUserWithEmailAndPassword(email, password);
 
@@ -85,8 +81,8 @@ async function handleRegister(e) {
     await db.collection(C.USERS).doc(cred.user.uid).set({
       name,
       email,
-      username,
-      office     : office || "",
+      username   : email,   // use email as username internally
+      office,
       userType   : "regular",   // default — overridden at approval
       isActive   : false,
       status     : "pending",
@@ -182,7 +178,7 @@ function initAuthGuard(onAuthed) {
 // ── Switch between login/register/reset tabs ─────────────
 function switchAuthTab(tab) {
   ["login","register","reset"].forEach(t => {
-    document.getElementById(`${t}Form`).style.display  = t===tab ? "block" : "none";
+    document.getElementById(${t}Form).style.display  = t===tab ? "block" : "none";
   });
   document.getElementById("authSubtitle").textContent = {
     login    : "Sign in to your account",

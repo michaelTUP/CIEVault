@@ -76,13 +76,11 @@
             <label class="form-label" for="regEmail">Email Address <span class="text-danger">*</span></label>
             <input type="email" id="regEmail" class="dms-input" placeholder="you@example.com" required />
           </div>
-          <div class="col-sm-6">
-            <label class="form-label" for="regUsername">Username <span class="text-danger">*</span></label>
-            <input type="text" id="regUsername" class="dms-input" placeholder="juandc" required />
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" for="regOffice">Office / Department</label>
-            <input type="text" id="regOffice" class="dms-input" placeholder="Finance" />
+          <div class="col-12">
+            <label class="form-label" for="regOffice">Office / Department <span class="text-danger">*</span></label>
+            <select id="regOffice" class="dms-select" required>
+              <option value="">Loading offices…</option>
+            </select>
           </div>
           <div class="col-sm-6">
             <label class="form-label" for="regPassword">Password <span class="text-danger">*</span></label>
@@ -188,6 +186,36 @@
         icon.classList.replace("fa-eye-slash","fa-eye");
       }
     }
+
+    // Load offices into the registration dropdown
+    async function loadOfficesForReg() {
+      const sel = document.getElementById("regOffice");
+      if (!sel || !FIREBASE_CONFIGURED || !db) return;
+      try {
+        sel.innerHTML = '<option value="">Loading…</option>';
+        const snap = await db.collection(C.OFFICES).orderBy("name").get();
+        if (snap.empty) {
+          sel.innerHTML = '<option value="">No offices available — contact admin</option>';
+          return;
+        }
+        sel.innerHTML = '<option value="">Select your office…</option>';
+        snap.forEach(doc => {
+          const opt = document.createElement("option");
+          opt.value = doc.data().name;
+          opt.textContent = doc.data().name;
+          sel.appendChild(opt);
+        });
+      } catch(e) {
+        sel.innerHTML = '<option value="">Could not load offices</option>';
+      }
+    }
+
+    // Override switchAuthTab to load offices when switching to register
+    const _origSwitch = switchAuthTab;
+    switchAuthTab = function(tab) {
+      _origSwitch(tab);
+      if (tab === "register") loadOfficesForReg();
+    };
   </script>
 </body>
 </html>
