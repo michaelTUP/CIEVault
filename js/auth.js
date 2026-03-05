@@ -1,3 +1,4 @@
+
 /**
  * auth.js — Login, registration, logout, password reset
  */
@@ -177,14 +178,11 @@ function initAuthGuard(onAuthed) {
 
 // ── Switch between login/register/reset tabs ─────────────
 function switchAuthTab(tab) {
-  ["login","register","reset"].forEach(t => {
-    document.getElementById(`${t}Form`).style.display = t === tab ? "block" : "none";
+  ["login","register","reset"].forEach(function(t) {
+    document.getElementById(t + "Form").style.display = t === tab ? "block" : "none";
   });
-  document.getElementById("authSubtitle").textContent = {
-    login    : "Sign in to your account",
-    register : "Create a new account",
-    reset    : "Reset your password"
-  }[tab];
+  var titles = { login: "Sign in to your account", register: "Create a new account", reset: "Reset your password" };
+  document.getElementById("authSubtitle").textContent = titles[tab];
 }
 
 // ── Friendly Firebase error messages ────────────────────
