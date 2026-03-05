@@ -84,7 +84,6 @@ async function fetchDocuments() {
     applyFilters();
     updateStats();
     updateFilterDropdowns();
-    if(_viewLoaded && _viewLoaded["dashboard"]) renderDashboard();
   } catch(e) {
     showToast("Failed to load documents: "+e.message,"error");
   } finally {
@@ -129,7 +128,6 @@ function renderDocumentTable(docs) {
         <div class="filename-text">${escapeHtml(doc.fileName||"Untitled")}</div>
         <div class="filename-sub">${escapeHtml(doc.subject||"")}</div>
       </td>
-      <td><span class="type-badge ${fileTypeBadgeClass(doc.fileType)}">${escapeHtml(doc.fileType||"other")}</span></td>
       <td class="text-muted small">${escapeHtml(offices)}</td>
       <td>
         ${(doc.tags||[]).slice(0,3).map(t=>`<span class="tag-pill">${escapeHtml(t)}</span>`).join("")}
@@ -157,12 +155,10 @@ function renderDocumentTable(docs) {
 
 // ── Stats bar ─────────────────────────────────────────────
 function updateStats() {
-  const user = getCurrentUser();
-  const visibleDocs = allDocuments.filter(d => canViewDoc(d, user));
   const tc = {};
-  visibleDocs.forEach(d => { tc[d.fileType||"other"] = (tc[d.fileType||"other"]||0)+1; });
-  const statTotal = document.getElementById("statTotal");
-  if (statTotal) statTotal.textContent = visibleDocs.length;
+  allDocuments.forEach(d => { tc[d.fileType||"other"] = (tc[d.fileType||"other"]||0)+1; });
+  document.getElementById("statTotal")?.setAttribute("data-val", allDocuments.length);
+  document.getElementById("statTotal") && (document.getElementById("statTotal").textContent = allDocuments.length);
   ["PDF","DOC","XLS","PPT"].forEach(k => {
     const map={PDF:"pdf",DOC:"document",XLS:"spreadsheet",PPT:"presentation"};
     const el = document.getElementById("stat"+k);
