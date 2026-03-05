@@ -13,7 +13,7 @@
   --border-light:  #263245;
   --text-main:     #e2eaf4; 
   --text-sub:      #8fa3bc;
-  --text-muted:    #e2eaf4; /* 55708a */
+  --text-muted:    #55708a; 
   --accent:        #f0a033;
   --accent-hover:  #e8920a;
   --accent2:       #3cb4f5;
@@ -786,4 +786,18 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
   border-radius: var(--radius); padding: 14px 16px;
   box-shadow: var(--shadow); max-width: 280px;
   animation: slideIn .3s ease;
+}
+
+/* ── Fix muted text in dark tables ─────────────────────── */
+.dms-table tbody td,
+.dms-table tbody td.text-muted,
+.dms-table tbody td .text-muted,
+.dms-table tbody td small {
+  color: var(--text-sub);
+}
+
+.dms-table tbody td .fw-medium,
+.dms-table tbody td .fw-semibold,
+.dms-table tbody td .fw-bold {
+  color: var(--text-main);
 }
