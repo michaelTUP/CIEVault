@@ -1,15 +1,16 @@
 /**
  * firebase-config.js
  * ─────────────────────────────────────────────────────────
- * ► HOW TO CONFIGURE:
+ * ★ REPLACE the values below with your real Firebase project credentials ★
+ *
+ * Where to find them:
  *   1. Go to https://console.firebase.google.com
- *   2. Project Settings → Your Apps → Add Web App (</>)
- *   3. Copy the firebaseConfig object and paste it below
- *   4. In Firestore Database, create a database in "test mode"
+ *   2. Click your project → ⚙ Project Settings
+ *   3. Scroll to "Your apps" → click your web app
+ *   4. Copy each value from the firebaseConfig object shown there
  * ─────────────────────────────────────────────────────────
  */
 
-// ★ REPLACE THIS WITH YOUR OWN FIREBASE CONFIG ★
 const firebaseConfig = {
   apiKey: "AIzaSyCfg6F2mkxoJxl7_UsPUoZDRkzM2Oo_3Jw",
   authDomain: "cievault.firebaseapp.com",
@@ -19,142 +20,68 @@ const firebaseConfig = {
   appId: "1:428635719174:web:1183f34075bfb94693e587"
 };
 
-// ─────────────────────────────────────────────────────────
-// Detect whether the config has been filled in
-// ─────────────────────────────────────────────────────────
-const FIREBASE_CONFIGURED = !Object.values(firebaseConfig).some(v =>
-  typeof v === "string" && v.startsWith("YOUR_")
+// ── Detect if config has been filled in ──────────────────
+const FIREBASE_CONFIGURED = !Object.values(firebaseConfig).some(
+  v => typeof v === "string" && v.startsWith("PASTE_")
 );
 
-let db = null;
+// ── Initialize ───────────────────────────────────────────
+let db   = null;
+let auth = null;   // ← auth MUST be declared here for auth.js to work
 
 if (FIREBASE_CONFIGURED) {
   firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
+  db   = firebase.firestore();
+  auth = firebase.auth();
+
+  // Offline persistence — caches data locally for fast loading
+  db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+    if (err.code !== "failed-precondition" && err.code !== "unimplemented") {
+      console.warn("Persistence error:", err.code);
+    }
+  });
 } else {
   console.warn(
-    "%c CIE Vault: Firebase not configured yet. ",
-    "background:#f0a033;color:#0c1117;font-weight:bold;padding:2px 6px;border-radius:3px",
-    "\nOpen js/firebase-config.js and replace the placeholder values with your real Firebase credentials."
+    "%c DocVault: Firebase not configured. Open js/firebase-config.js and replace the PASTE_... placeholders. ",
+    "background:#f0a033;color:#0c1117;font-weight:bold;padding:2px 8px;border-radius:3px"
   );
 }
 
-// Collection names
-const COLLECTIONS = {
-  DOCUMENTS: "documents",
-  PEOPLE: "people"
+// ── Collection names ──────────────────────────────────────
+const C = {
+  USERS     : "users",
+  DOCUMENTS : "documents",
+  TAGS      : "tags",
+  OFFICES   : "offices",
+  AUDIT     : "auditLog"
 };
 
-// ─────────────────────────────────────────────────────────
-// Sample seed data
-// ─────────────────────────────────────────────────────────
-const SAMPLE_PEOPLE = [
-  { name: "Maria Santos",    department: "Finance",    position: "Finance Manager",       email: "m.santos@company.com",    status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Juan dela Cruz",  department: "IT",         position: "Systems Administrator", email: "j.delacruz@company.com",  status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Ana Reyes",       department: "HR",         position: "HR Officer",            email: "a.reyes@company.com",     status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Carlos Mendoza",  department: "Operations", position: "Operations Lead",       email: "c.mendoza@company.com",   status: "Active", dateAdded: firebase.firestore.Timestamp.now() },
-  { name: "Luz Villanueva",  department: "Legal",      position: "Legal Counsel",         email: "l.villanueva@company.com",status: "Active", dateAdded: firebase.firestore.Timestamp.now() }
-];
+// ── User type definitions ─────────────────────────────────
+const USER_TYPE_ORDER  = ["guest","regular","admin","superAdmin","systemAdmin"];
+const USER_TYPE_LABELS = {
+  guest       : "Guest",
+  regular     : "Regular",
+  admin       : "Admin",
+  superAdmin  : "Super Admin",
+  systemAdmin : "System Admin"
+};
+const USER_TYPE_COLORS = {
+  guest       : "#94a3b8",
+  regular     : "#3cb4f5",
+  admin       : "#f59c3c",
+  superAdmin  : "#a78bfa",
+  systemAdmin : "#e74c5e"
+};
 
-const SAMPLE_DOCUMENTS = [
-  {
-    driveFileId: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
-    driveFileLink: "https://drive.google.com/file/d/1pvPe4YA0jqrZpyi8Mbogy3XK6P72U3AJ/view?usp=sharing",
-    fileName: "Q1 Budget Report 2024.xlsx",
-    fileType: "spreadsheet",
-    dateCreated: "2024-01-15",
-    subject: "Q1 Budget Report",
-    tags: ["budget","finance","Q1","2024"],
-    peopleInvolved: ["Maria Santos","Carlos Mendoza"],
-    departmentOrOffice: "Finance",
-    uploadedBy: "Maria Santos",
-    version: "1.0",
-    notes: "Quarterly budget analysis for all departments.",
-    visibility: "Internal",
-    dateAdded: firebase.firestore.Timestamp.now()
-  },
-  {
-    driveFileId: "1Mf9GBpiNmHpJxDrLAOIK3-yWnRTkjPpV",
-    driveFileLink: "https://drive.google.com/file/d/1pvPe4YA0jqrZpyi8Mbogy3XK6P72U3AJ",
-    fileName: "Employee Handbook 2024.pdf",
-    fileType: "pdf",
-    dateCreated: "2024-01-02",
-    subject: "Employee Handbook",
-    tags: ["HR","policy","handbook","employees"],
-    peopleInvolved: ["Ana Reyes"],
-    departmentOrOffice: "HR",
-    uploadedBy: "Ana Reyes",
-    version: "3.2",
-    notes: "Updated handbook with new hybrid work policies.",
-    visibility: "Public",
-    dateAdded: firebase.firestore.Timestamp.now()
-  },
-  {
-    driveFileId: "1aBcDeFgHiJkLmNoPqRsTuVwXyZ",
-    driveFileLink: "https://drive.google.com/file/d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ",
-    fileName: "IT Infrastructure Upgrade Proposal.docx",
-    fileType: "pdf",
-    dateCreated: "2024-02-10",
-    subject: "IT Infrastructure Upgrade Proposal",
-    tags: ["IT","infrastructure","proposal","network"],
-    peopleInvolved: ["Juan dela Cruz","Carlos Mendoza"],
-    departmentOrOffice: "IT",
-    uploadedBy: "Juan dela Cruz",
-    version: "2.0",
-    notes: "Proposal for network upgrade and server migration.",
-    visibility: "Confidential",
-    dateAdded: firebase.firestore.Timestamp.now()
-  },
-  {
-    driveFileId: "1zYxWvUtSrQpOnMlKjIhGfEdCbA",
-    driveFileLink: "https://drive.google.com/file/d/1zYxWvUtSrQpOnMlKjIhGfEdCbA",
-    fileName: "Service Agreement - Vendor XYZ.pdf",
-    fileType: "pdf",
-    dateCreated: "2024-03-05",
-    subject: "Service Level Agreement",
-    tags: ["legal","contract","vendor","SLA"],
-    peopleInvolved: ["Luz Villanueva","Maria Santos"],
-    departmentOrOffice: "Legal",
-    uploadedBy: "Luz Villanueva",
-    version: "1.1",
-    notes: "Annual SLA renewal with updated penalty clauses.",
-    visibility: "Confidential",
-    dateAdded: firebase.firestore.Timestamp.now()
-  },
-  {
-    driveFileId: "1pQrStUvWxYzAbCdEfGhIjKlMnOp",
-    driveFileLink: "https://drive.google.com/file/d/1pQrStUvWxYzAbCdEfGhIjKlMnOp",
-    fileName: "Operations Monthly Report - March.pptx",
-    fileType: "presentation",
-    dateCreated: "2024-03-31",
-    subject: "Monthly Operations Report",
-    tags: ["operations","monthly report","KPIs"],
-    peopleInvolved: ["Carlos Mendoza"],
-    departmentOrOffice: "Operations",
-    uploadedBy: "Carlos Mendoza",
-    version: "1.0",
-    notes: "March operations summary with KPI dashboard.",
-    visibility: "Internal",
-    dateAdded: firebase.firestore.Timestamp.now()
-  }
-];
+// ── Current user cache ────────────────────────────────────
+let _currentUser = null;
+const getCurrentUser   = ()  => _currentUser;
+const setCurrentUser   = (p) => { _currentUser = p; };
+const clearCurrentUser = ()  => { _currentUser = null; };
 
-/**
- * Seeds Firestore with sample data if the documents collection is empty.
- * Does nothing if Firebase is not configured.
- */
-async function seedSampleData() {
-  if (!FIREBASE_CONFIGURED || !db) return;
-  try {
-    const snap = await db.collection(COLLECTIONS.DOCUMENTS).limit(1).get();
-    if (!snap.empty) return;
-    console.log("Seeding sample data…");
-    const batch = db.batch();
-    SAMPLE_PEOPLE.forEach(p  => batch.set(db.collection(COLLECTIONS.PEOPLE).doc(), p));
-    SAMPLE_DOCUMENTS.forEach(d => batch.set(db.collection(COLLECTIONS.DOCUMENTS).doc(), d));
-    await batch.commit();
-    console.log("Sample data seeded.");
-  } catch (err) {
-    console.warn("Seed failed:", err.message);
-  }
-}
+// ── Role helpers ──────────────────────────────────────────
+const isSystemAdmin = (u) => u?.userType === "systemAdmin";
+const isSuperPlus   = (u) => ["systemAdmin","superAdmin"].includes(u?.userType);
+const isAdminPlus   = (u) => ["systemAdmin","superAdmin","admin"].includes(u?.userType);
+const isRegularPlus = (u) => u?.userType !== "guest" && !!u?.userType;
+const isGuest       = (u) => u?.userType === "guest";
