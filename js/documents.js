@@ -157,10 +157,12 @@ function renderDocumentTable(docs) {
 
 // ── Stats bar ─────────────────────────────────────────────
 function updateStats() {
+  const user = getCurrentUser();
+  const visibleDocs = allDocuments.filter(d => canViewDoc(d, user));
   const tc = {};
-  allDocuments.forEach(d => { tc[d.fileType||"other"] = (tc[d.fileType||"other"]||0)+1; });
-  document.getElementById("statTotal")?.setAttribute("data-val", allDocuments.length);
-  document.getElementById("statTotal") && (document.getElementById("statTotal").textContent = allDocuments.length);
+  visibleDocs.forEach(d => { tc[d.fileType||"other"] = (tc[d.fileType||"other"]||0)+1; });
+  const statTotal = document.getElementById("statTotal");
+  if (statTotal) statTotal.textContent = visibleDocs.length;
   ["PDF","DOC","XLS","PPT"].forEach(k => {
     const map={PDF:"pdf",DOC:"document",XLS:"spreadsheet",PPT:"presentation"};
     const el = document.getElementById("stat"+k);
