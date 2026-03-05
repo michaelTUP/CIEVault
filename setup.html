@@ -4,426 +4,456 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DocVault — First-Time Setup</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="css/styles.css" />
-
   <style>
-    .setup-wrapper {
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(231,76,94,.08) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(240,160,51,.07) 0%, transparent 60%),
-        #0c1117;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #0c1117; color: #e2eaf4;
+      min-height: 100vh; display: flex;
+      align-items: center; justify-content: center; padding: 20px;
+      background-image:
+        radial-gradient(ellipse 70% 50% at 15% 15%, rgba(231,76,94,.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 85%, rgba(240,160,51,.06) 0%, transparent 60%);
     }
-    .setup-card {
-      background: #141c25;
-      border: 1px solid #263245;
-      border-radius: 14px;
-      padding: 36px 32px;
-      width: 100%; max-width: 500px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    .card {
+      background: #141c25; border: 1px solid #263245; border-radius: 14px;
+      padding: 36px 32px; width: 100%; max-width: 520px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.5);
+      animation: fadeIn .35s ease both;
     }
-    .setup-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(231,76,94,.12); color: #e74c5e;
-      border: 1px solid rgba(231,76,94,.3);
-      border-radius: 20px; padding: 4px 12px;
-      font-size: 12px; font-weight: 600;
-      margin-bottom: 20px;
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .logo { display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+    .logo-icon {
+      width:44px; height:44px; border-radius:10px;
+      background:linear-gradient(135deg,#f0a033,#e8920a);
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px; color:#0c1117; flex-shrink:0;
     }
-    .setup-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 24px; font-weight: 800;
-      color: #e2eaf4; margin-bottom: 6px;
+    .logo-name { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; }
+    .logo-sub  { font-size:11.5px; color:#55708a; }
+    .badge {
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(231,76,94,.1); color:#e74c5e;
+      border:1px solid rgba(231,76,94,.25);
+      border-radius:20px; padding:4px 12px;
+      font-size:12px; font-weight:600; margin-bottom:20px;
     }
-    .setup-sub {
-      font-size: 13.5px; color: #55708a; margin-bottom: 24px; line-height: 1.6;
+    h2 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:6px; }
+    .sub { font-size:13.5px; color:#8fa3bc; margin-bottom:20px; line-height:1.6; }
+    label { display:block; margin-bottom:6px; font-size:12.5px; font-weight:600; color:#8fa3bc; }
+    input, textarea {
+      width:100%; background:#1a2535; border:1px solid #263245;
+      color:#e2eaf4; border-radius:8px; padding:9px 13px;
+      font-size:13.5px; font-family:inherit; outline:none;
+      transition:border-color .18s, box-shadow .18s; margin-bottom:14px;
     }
-    .step-indicator {
-      display: flex; align-items: center; gap: 0;
-      margin-bottom: 28px;
+    input:focus, textarea:focus { border-color:#f0a033; box-shadow:0 0 0 3px rgba(240,160,51,.15); }
+    input::placeholder, textarea::placeholder { color:#55708a; }
+    textarea { resize:vertical; min-height:140px; font-family:monospace; font-size:12px; margin-bottom:0; }
+    .btn {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      width:100%; padding:11px 18px; border:none; border-radius:8px;
+      font-size:14px; font-weight:600; cursor:pointer; transition:all .18s; margin-top:14px;
+      font-family:'DM Sans',sans-serif;
     }
-    .step-dot {
-      width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      background: #1a2535; color: #55708a;
-      border: 2px solid #263245;
-      flex-shrink: 0;
+    .btn-primary { background:linear-gradient(135deg,#f0a033,#e8920a); color:#0c1117; }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(240,160,51,.35); }
+    .btn-primary:disabled { opacity:.6; cursor:not-allowed; transform:none; box-shadow:none; }
+    .info-box {
+      background:#111923; border:1px solid #1e2d3d; border-radius:8px;
+      padding:14px 16px; font-size:13px; color:#8fa3bc; margin-bottom:18px; line-height:1.7;
     }
-    .step-dot.active  { background: rgba(240,160,51,.15); color: #f0a033; border-color: #f0a033; }
-    .step-dot.done    { background: rgba(91,201,163,.15);  color: #5bc9a3; border-color: #5bc9a3; }
-    .step-line { flex: 1; height: 2px; background: #1e2d3d; }
-    .step-line.done { background: rgba(91,201,163,.4); }
-
-    .check-section {
-      background: #111923; border: 1px solid #1e2d3d;
-      border-radius: 10px; padding: 20px;
-      margin-bottom: 20px;
+    .info-box ol { padding-left:18px; }
+    .info-box li { margin-bottom:3px; }
+    .info-box a { color:#3cb4f5; }
+    code { color:#f0a033; background:rgba(240,160,51,.1); padding:1px 5px; border-radius:4px; font-size:.88em; }
+    .warn-box {
+      background:rgba(240,160,51,.08); border:1px solid rgba(240,160,51,.2);
+      border-radius:8px; padding:12px 14px; font-size:12.5px; color:#8fa3bc;
+      display:flex; gap:10px; margin-bottom:18px;
     }
-    .check-row {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 13.5px; color: #8fa3bc; padding: 6px 0;
+    .warn-box i { color:#f0a033; margin-top:2px; flex-shrink:0; }
+    .err-box {
+      background:rgba(231,76,94,.1); border:1px solid rgba(231,76,94,.25);
+      border-radius:8px; padding:11px 14px; color:#e74c5e; font-size:13px;
+      margin-top:10px; display:none; line-height:1.5;
     }
-    .check-row i { width: 18px; text-align: center; }
-    .check-ok   { color: #5bc9a3; }
-    .check-fail { color: #e74c5e; }
-    .check-spin { color: #f0a033; }
-
-    .already-done {
-      text-align: center; padding: 20px;
+    /* Steps */
+    .steps { display:flex; align-items:center; margin-bottom:26px; }
+    .sdot {
+      width:28px; height:28px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:700; flex-shrink:0;
+      background:#1a2535; color:#55708a; border:2px solid #263245; transition:all .3s;
     }
-    .already-done .big-icon {
-      font-size: 48px; color: #5bc9a3; margin-bottom: 16px;
+    .sdot.active { background:rgba(240,160,51,.15); color:#f0a033; border-color:#f0a033; }
+    .sdot.done   { background:rgba(91,201,163,.15); color:#5bc9a3; border-color:#5bc9a3; }
+    .sline { flex:1; height:2px; background:#1e2d3d; transition:background .3s; }
+    .sline.done { background:rgba(91,201,163,.4); }
+    /* Check list */
+    .checks { background:#111923; border:1px solid #1e2d3d; border-radius:8px; padding:8px 14px; margin-bottom:18px; }
+    .ck {
+      display:flex; align-items:flex-start; gap:10px;
+      font-size:13.5px; color:#8fa3bc; padding:8px 0;
+      border-bottom:1px solid #1a2535;
     }
-
-    #errorMsg {
-      background: rgba(231,76,94,.1); border: 1px solid rgba(231,76,94,.3);
-      border-radius: 8px; padding: 10px 14px;
-      color: #e74c5e; font-size: 13px;
-      margin-top: 12px; display: none;
+    .ck:last-child { border-bottom:none; }
+    .ck i { width:16px; text-align:center; margin-top:2px; flex-shrink:0; }
+    .ok   { color:#5bc9a3!important; }
+    .fail { color:#e74c5e!important; }
+    .sp   { color:#f0a033!important; }
+    .wn   { color:#f59c3c!important; }
+    /* Two-col */
+    .cols { display:flex; gap:12px; }
+    .cols > div { flex:1; min-width:0; }
+    /* Pw eye */
+    .pwrap { position:relative; }
+    .pwrap input { padding-right:38px; margin-bottom:0; }
+    .peye {
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      background:none; border:none; color:#55708a; cursor:pointer;
     }
-
-    .warning-box {
-      background: rgba(240,160,51,.08); border: 1px solid rgba(240,160,51,.25);
-      border-radius: 8px; padding: 12px 14px;
-      font-size: 12.5px; color: #8fa3bc; margin-bottom: 20px;
-      display: flex; gap: 10px;
-    }
-    .warning-box i { color: #f0a033; flex-shrink: 0; margin-top: 1px; }
+    .peye:hover { color:#e2eaf4; }
+    /* Success / locked */
+    .big-icon { font-size:52px; text-align:center; margin-bottom:14px; }
+    .big-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; text-align:center; margin-bottom:8px; }
+    .big-sub   { font-size:13.5px; color:#8fa3bc; text-align:center; margin-bottom:20px; line-height:1.6; }
+    .mb14 { margin-bottom:14px; }
   </style>
 </head>
-<body class="auth-body">
+<body>
+<div class="card">
 
-<div class="setup-wrapper">
-  <div class="setup-card">
-
-    <!-- Header -->
-    <div class="d-flex align-items-center gap-3 mb-3">
-      <div class="auth-logo-icon" style="width:44px;height:44px;font-size:18px">
-        <i class="fa-solid fa-vault"></i>
-      </div>
-      <div>
-        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#e2eaf4">DocVault</div>
-        <div style="font-size:11.5px;color:#55708a">First-Time Setup</div>
-      </div>
+  <!-- Logo -->
+  <div class="logo">
+    <div class="logo-icon"><i class="fa-solid fa-vault"></i></div>
+    <div>
+      <div class="logo-name">DocVault</div>
+      <div class="logo-sub">First-Time Setup</div>
     </div>
-
-    <div class="setup-badge">
-      <i class="fa-solid fa-shield-halved"></i> One-Time Setup
-    </div>
-
-    <!-- Step indicators -->
-    <div class="step-indicator">
-      <div class="step-dot active" id="step1dot">1</div>
-      <div class="step-line" id="line1"></div>
-      <div class="step-dot" id="step2dot">2</div>
-      <div class="step-line" id="line2"></div>
-      <div class="step-dot" id="step3dot">3</div>
-    </div>
-
-    <!-- ── STEP 1: Checking ── -->
-    <div id="stepChecking">
-      <div class="setup-title">Checking system…</div>
-      <div class="setup-sub">Verifying that no System Admin account exists yet.</div>
-      <div class="check-section">
-        <div class="check-row" id="chkFirebase">
-          <i class="fa-solid fa-circle-notch fa-spin check-spin"></i>
-          Connecting to Firebase…
-        </div>
-        <div class="check-row" id="chkAdmin" style="display:none">
-          <i class="fa-solid fa-circle-notch fa-spin check-spin"></i>
-          Checking for existing System Admin…
-        </div>
-      </div>
-    </div>
-
-    <!-- ── STEP 2: Create form ── -->
-    <div id="stepCreate" style="display:none">
-      <div class="setup-title">Create System Admin</div>
-      <div class="setup-sub">
-        This account will have full control of DocVault. Keep these credentials safe.
-      </div>
-
-      <div class="warning-box">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        <div>
-          This setup page will become inaccessible after the System Admin is created.
-          Anyone with this URL will be redirected to the login page.
-        </div>
-      </div>
-
-      <form id="setupForm" novalidate>
-        <div class="row g-3">
-          <div class="col-12">
-            <label class="form-label" for="saName">Full Name <span class="text-danger">*</span></label>
-            <input type="text" id="saName" class="dms-input" placeholder="System Administrator" required />
-          </div>
-          <div class="col-12">
-            <label class="form-label" for="saEmail">Email Address <span class="text-danger">*</span></label>
-            <input type="email" id="saEmail" class="dms-input" placeholder="admin@yourorg.com" required />
-          </div>
-          <div class="col-12">
-            <label class="form-label" for="saUsername">Username <span class="text-danger">*</span></label>
-            <input type="text" id="saUsername" class="dms-input" placeholder="sysadmin" required />
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" for="saPassword">Password <span class="text-danger">*</span></label>
-            <div class="input-icon-wrap">
-              <input type="password" id="saPassword" class="dms-input"
-                     placeholder="Min. 8 characters" required minlength="8" />
-              <button type="button" class="input-icon-right" onclick="togglePwd('saPassword',this)">
-                <i class="fa-solid fa-eye"></i>
-              </button>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" for="saConfirm">Confirm Password <span class="text-danger">*</span></label>
-            <input type="password" id="saConfirm" class="dms-input" placeholder="Repeat password" required />
-          </div>
-        </div>
-
-        <div id="errorMsg"></div>
-
-        <button type="submit" id="createBtn" class="btn-dms-primary w-100 mt-4">
-          <i class="fa-solid fa-shield-halved me-2"></i>Create System Admin Account
-        </button>
-      </form>
-    </div>
-
-    <!-- ── STEP 3: Done ── -->
-    <div id="stepDone" style="display:none">
-      <div class="text-center py-2">
-        <div style="font-size:52px;color:#5bc9a3;margin-bottom:16px">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <div class="setup-title" style="text-align:center">System Admin Created!</div>
-        <div class="setup-sub" style="text-align:center;margin-bottom:24px">
-          Your DocVault System Admin account is ready. You can now sign in and start
-          managing the system — approve users, add tags, offices, and register documents.
-        </div>
-        <div class="check-section mb-3" style="text-align:left">
-          <div class="check-row"><i class="fa-solid fa-circle-check check-ok"></i> System Admin account created</div>
-          <div class="check-row"><i class="fa-solid fa-circle-check check-ok"></i> Firestore profile saved</div>
-          <div class="check-row"><i class="fa-solid fa-circle-check check-ok"></i> Setup page locked</div>
-        </div>
-        <a href="index.html" class="btn-dms-primary w-100">
-          <i class="fa-solid fa-right-to-bracket me-2"></i>Go to Sign In
-        </a>
-      </div>
-    </div>
-
-    <!-- ── Already configured ── -->
-    <div id="stepAlready" style="display:none">
-      <div class="already-done">
-        <div class="big-icon"><i class="fa-solid fa-lock"></i></div>
-        <div class="setup-title" style="text-align:center">Setup Already Complete</div>
-        <div class="setup-sub" style="text-align:center;margin-bottom:20px">
-          A System Admin account already exists. This setup page is no longer accessible.
-        </div>
-        <a href="index.html" class="btn-dms-primary w-100">
-          <i class="fa-solid fa-right-to-bracket me-2"></i>Go to Sign In
-        </a>
-      </div>
-    </div>
-
-    <!-- Firebase not configured -->
-    <div id="stepNotConfigured" style="display:none">
-      <div class="text-center py-2">
-        <div style="font-size:44px;color:#f0a033;margin-bottom:14px">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <div class="setup-title" style="text-align:center">Firebase Not Configured</div>
-        <div class="setup-sub" style="text-align:center">
-          Open <code>js/firebase-config.js</code> and replace the placeholder values
-          with your real Firebase project credentials, then push to GitHub again.
-        </div>
-      </div>
-    </div>
-
   </div>
+  <div class="badge"><i class="fa-solid fa-shield-halved"></i> One-Time Setup</div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="sdot active" id="sd1">1</div>
+    <div class="sline"       id="sl1"></div>
+    <div class="sdot"        id="sd2">2</div>
+    <div class="sline"       id="sl2"></div>
+    <div class="sdot"        id="sd3">3</div>
+  </div>
+
+  <!-- ─── STEP 1: Paste config ─── -->
+  <div id="p1">
+    <h2>Paste Firebase Config</h2>
+    <div class="sub">No file editing needed — paste your credentials directly here.</div>
+
+    <div class="info-box">
+      <strong style="color:#e2eaf4">Where to find it:</strong>
+      <ol style="margin-top:8px">
+        <li>Open <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a></li>
+        <li>Click your project → <strong>⚙ Project Settings</strong></li>
+        <li>Scroll to <strong>Your apps</strong> → select your web app</li>
+        <li>Copy the entire <code>firebaseConfig = { … }</code> block and paste below</li>
+      </ol>
+    </div>
+
+    <label for="cfgBox">Firebase Config Object</label>
+    <textarea id="cfgBox" placeholder='const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+};'></textarea>
+
+    <div id="e1" class="err-box"></div>
+
+    <button class="btn btn-primary" onclick="step1()">
+      <i class="fa-solid fa-plug"></i> Connect &amp; Check
+    </button>
+  </div>
+
+  <!-- ─── STEP 2: Checking ─── -->
+  <div id="p2" style="display:none">
+    <h2>Checking…</h2>
+    <div class="sub">Connecting to Firebase and verifying the system.</div>
+    <div class="checks">
+      <div class="ck" id="ck1"><i class="fa-solid fa-circle-notch fa-spin sp"></i><span>Initializing Firebase…</span></div>
+      <div class="ck" id="ck2" style="display:none"><i class="fa-solid fa-circle-notch fa-spin sp"></i><span>Checking for existing System Admin…</span></div>
+    </div>
+  </div>
+
+  <!-- ─── STEP 3: Create ─── -->
+  <div id="p3" style="display:none">
+    <h2>Create System Admin</h2>
+    <div class="sub">This is the master account for DocVault. Keep your credentials safe.</div>
+    <div class="warn-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>After creation, this setup page locks permanently. No one else can use it.</span>
+    </div>
+    <form onsubmit="step3(event)">
+      <div class="mb14">
+        <label>Full Name *</label>
+        <input type="text" id="saName" placeholder="System Administrator" required />
+      </div>
+      <div class="mb14">
+        <label>Email Address *</label>
+        <input type="email" id="saEmail" placeholder="admin@yourorg.com" required />
+      </div>
+      <div class="mb14">
+        <label>Username *</label>
+        <input type="text" id="saUser" placeholder="sysadmin" required />
+      </div>
+      <div class="cols mb14">
+        <div>
+          <label>Password * (min 8)</label>
+          <div class="pwrap">
+            <input type="password" id="saPwd" placeholder="••••••••" required minlength="8" />
+            <button type="button" class="peye" onclick="tp('saPwd',this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+        <div>
+          <label>Confirm Password *</label>
+          <div class="pwrap">
+            <input type="password" id="saPwd2" placeholder="••••••••" required />
+            <button type="button" class="peye" onclick="tp('saPwd2',this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+      </div>
+      <div id="e3" class="err-box"></div>
+      <button type="submit" id="createBtn" class="btn btn-primary">
+        <i class="fa-solid fa-shield-halved"></i> Create System Admin Account
+      </button>
+    </form>
+  </div>
+
+  <!-- ─── Done ─── -->
+  <div id="pDone" style="display:none">
+    <div class="big-icon" style="color:#5bc9a3"><i class="fa-solid fa-circle-check"></i></div>
+    <div class="big-title">System Admin Created!</div>
+    <div class="big-sub">Your account is ready. Sign in with the credentials you just set. This setup page is now permanently locked.</div>
+    <div class="checks">
+      <div class="ck"><i class="fa-solid fa-circle-check ok"></i><span>Firebase Auth account created</span></div>
+      <div class="ck"><i class="fa-solid fa-circle-check ok"></i><span>Firestore profile saved</span></div>
+      <div class="ck"><i class="fa-solid fa-circle-check ok"></i><span>Setup locked</span></div>
+    </div>
+    <a href="index.html"><button class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Go to Sign In</button></a>
+  </div>
+
+  <!-- ─── Locked ─── -->
+  <div id="pLocked" style="display:none">
+    <div class="big-icon" style="color:#55708a"><i class="fa-solid fa-lock"></i></div>
+    <div class="big-title" style="color:#8fa3bc">Setup Already Complete</div>
+    <div class="big-sub">A System Admin already exists. This page is locked.</div>
+    <a href="index.html"><button class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Go to Sign In</button></a>
+  </div>
+
 </div>
 
-<div id="toastContainer" class="toast-container"></div>
-
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Firebase SDKs ONLY — no other scripts loaded -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/utils.js"></script>
 
 <script>
-  // ── Step indicator helpers ──────────────────────────────
-  function setStep(n) {
-    for (let i = 1; i <= 3; i++) {
-      const dot  = document.getElementById("step"+i+"dot");
-      const line = document.getElementById("line"+i);
-      if (i < n)  { dot.className="step-dot done"; dot.innerHTML='<i class="fa-solid fa-check" style="font-size:10px"></i>'; }
-      if (i === n) { dot.className="step-dot active"; dot.textContent=i; }
-      if (i > n)  { dot.className="step-dot"; dot.textContent=i; }
-      if (line) line.className = "step-line" + (i < n ? " done":"");
-    }
+"use strict";
+let _db, _auth;
+
+/* ── Show/hide panels ── */
+function show(id) {
+  ["p1","p2","p3","pDone","pLocked"].forEach(p =>
+    document.getElementById(p).style.display = p===id ? "block" : "none");
+}
+
+/* ── Steps ── */
+function setSteps(n) {
+  for (let i=1;i<=3;i++) {
+    const d = document.getElementById("sd"+i);
+    const l = document.getElementById("sl"+i);
+    if (i<n)  { d.className="sdot done"; d.innerHTML='<i class="fa-solid fa-check" style="font-size:10px"></i>'; }
+    if (i===n){ d.className="sdot active"; d.textContent=i; }
+    if (i>n)  { d.className="sdot"; d.textContent=i; }
+    if (l) l.className = i<n ? "sline done" : "sline";
+  }
+}
+
+/* ── Check rows ── */
+function ck(id, type, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = "flex";
+  const ic = {spin:"fa-circle-notch fa-spin sp", ok:"fa-circle-check ok",
+               fail:"fa-circle-xmark fail", warn:"fa-triangle-exclamation wn"};
+  el.innerHTML = `<i class="fa-solid ${ic[type]||ic.spin}"></i><span>${msg}</span>`;
+}
+
+/* ── Errors ── */
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.innerHTML = msg; el.style.display = "block"; }
+}
+function hideErr(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = "none";
+}
+
+/* ── Password toggle ── */
+function tp(id, btn) {
+  const f=document.getElementById(id), i=btn.querySelector("i");
+  f.type = f.type==="password" ? "text" : "password";
+  i.className = f.type==="text" ? "fa-solid fa-eye-slash" : "fa-solid fa-eye";
+}
+
+/* ── Parse Firebase config from pasted text ── */
+function parseCfg(raw) {
+  try {
+    const s = raw.indexOf("{"), e = raw.lastIndexOf("}");
+    if (s===-1||e===-1) return null;
+    let obj = raw.slice(s, e+1);
+    // Remove JS comments
+    obj = obj.replace(/\/\/.*$/gm,"").replace(/\/\*[\s\S]*?\*\//g,"");
+    // Remove trailing commas
+    obj = obj.replace(/,(\s*[}\]])/g,"$1");
+    // Quote unquoted keys
+    obj = obj.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*):/g,'$1"$2"$3:');
+    // Replace single-quoted strings with double-quoted
+    obj = obj.replace(/'([^']*)'/g,'"$1"');
+    return JSON.parse(obj);
+  } catch(e) { return null; }
+}
+
+/* ── STEP 1: Connect ── */
+async function step1() {
+  hideErr("e1");
+  const raw = document.getElementById("cfgBox").value.trim();
+  if (!raw) { showErr("e1","Please paste your Firebase config first."); return; }
+
+  const cfg = parseCfg(raw);
+  if (!cfg || !cfg.apiKey || !cfg.projectId) {
+    showErr("e1","Could not read the config — make sure you pasted the full <code>firebaseConfig = { … }</code> block including the curly braces.");
+    return;
+  }
+  if (cfg.apiKey.includes("YOUR_") || cfg.projectId.includes("YOUR_")) {
+    showErr("e1","These look like placeholder values. Paste your <strong>real</strong> Firebase credentials from the Firebase Console.");
+    return;
   }
 
-  function showSection(id) {
-    ["stepChecking","stepCreate","stepDone","stepAlready","stepNotConfigured"]
-      .forEach(s => document.getElementById(s).style.display = s===id?"block":"none");
+  setSteps(2); show("p2");
+  ck("ck1","spin","Initializing Firebase…");
+
+  /* Init Firebase — NO enablePersistence, new named app instance */
+  try {
+    // Clean up any previous attempt
+    const existing = firebase.apps.find(a => a.name === "setup");
+    if (existing) await existing.delete();
+
+    const app = firebase.initializeApp(cfg, "setup");
+    _db   = firebase.firestore(app);
+    _auth = firebase.auth(app);
+    // ⚠ Do NOT call _db.enablePersistence() here
+  } catch(err) {
+    ck("ck1","fail","Firebase init error: " + err.message);
+    setTimeout(()=>{ setSteps(1); show("p1"); showErr("e1","Init failed: "+err.message); }, 2000);
+    return;
   }
 
-  function togglePwd(id, btn) {
-    const f=document.getElementById(id), i=btn.querySelector("i");
-    f.type = f.type==="password" ? "text" : "password";
-    i.classList.toggle("fa-eye"); i.classList.toggle("fa-eye-slash");
+  ck("ck1","ok","Firebase connected");
+  ck("ck2","spin","Checking for existing System Admin…");
+
+  /* Query — plain .get() with no source option, 12s timeout */
+  let snap;
+  try {
+    snap = await Promise.race([
+      _db.collection("users").where("userType","==","systemAdmin").limit(1).get(),
+      new Promise((_,rej) => setTimeout(() => rej(
+        new Error("Timed out (12s). Check: Firestore Database is created in Firebase Console → Build → Firestore Database.")
+      ), 12000))
+    ]);
+  } catch(err) {
+    ck("ck2","fail", err.message);
+    setTimeout(()=>{
+      setSteps(1); show("p1");
+      showErr("e1","Connection failed: " + err.message +
+        "<br><br><strong>Common fix:</strong> Go to Firebase Console → Build → Firestore Database → if it says 'Create database', click it and choose test mode.");
+    }, 2500);
+    return;
   }
 
-  function showError(msg) {
-    const el = document.getElementById("errorMsg");
-    el.textContent = msg; el.style.display = "block";
+  if (!snap.empty) {
+    ck("ck2","ok","System Admin already exists");
+    await new Promise(r=>setTimeout(r,700));
+    setSteps(3); show("pLocked");
+  } else {
+    ck("ck2","ok","No System Admin found — ready to create");
+    await new Promise(r=>setTimeout(r,700));
+    setSteps(3); show("p3");
   }
-  function hideError() { document.getElementById("errorMsg").style.display="none"; }
+}
 
-  // ── Boot sequence ────────────────────────────────────────
-  async function boot() {
-    if (!FIREBASE_CONFIGURED || !db || !auth) {
-      showSection("stepNotConfigured");
-      return;
-    }
+/* ── STEP 3: Create System Admin ── */
+async function step3(e) {
+  e.preventDefault();
+  hideErr("e3");
 
-    let snap;
-    try {
-      // Force server fetch with hard 10s timeout — bypasses persistence hang
-      snap = await Promise.race([
-        db.collection("users")
-          .where("userType","==","systemAdmin")
-          .limit(1)
-          .get({ source: "server" }),
-        new Promise((_,reject) =>
-          setTimeout(() => reject(new Error(
-            "Connection timed out. Check your Firebase credentials and that " +
-            "Firestore database is created in the Firebase console."
-          )), 10000)
-        )
-      ]);
-    } catch(err) {
-      document.getElementById("chkFirebase").innerHTML =
-        `<i class="fa-solid fa-circle-xmark check-fail"></i> ${err.message}`;
-      document.getElementById("chkAdmin").style.display = "flex";
-      document.getElementById("chkAdmin").innerHTML =
-        `<i class="fa-solid fa-triangle-exclamation" style="color:var(--warning)"></i> ` +
-        `Make sure: (1) <code>js/firebase-config.js</code> has your real credentials, ` +
-        `(2) Firestore database is created in Firebase Console → Build → Firestore Database.`;
-      return;
-    }
+  const name  = document.getElementById("saName").value.trim();
+  const email = document.getElementById("saEmail").value.trim();
+  const uname = document.getElementById("saUser").value.trim();
+  const pwd   = document.getElementById("saPwd").value;
+  const pwd2  = document.getElementById("saPwd2").value;
+  const btn   = document.getElementById("createBtn");
 
-    // Firebase connected
-    document.getElementById("chkFirebase").innerHTML =
-      '<i class="fa-solid fa-circle-check check-ok"></i> Firebase connected';
-    document.getElementById("chkAdmin").style.display = "flex";
-    document.getElementById("chkAdmin").innerHTML = snap.empty
-      ? '<i class="fa-solid fa-circle-check check-ok"></i> No System Admin found — setup required'
-      : '<i class="fa-solid fa-circle-check check-ok"></i> System Admin already exists';
+  if (pwd !== pwd2)     { showErr("e3","Passwords do not match."); return; }
+  if (pwd.length < 8)   { showErr("e3","Password must be at least 8 characters."); return; }
+  if (!name||!email||!uname) { showErr("e3","All fields are required."); return; }
 
-    await new Promise(r => setTimeout(r, 700));
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Creating…';
 
-    if (!snap.empty) {
-      setStep(3);
-      showSection("stepAlready");
-    } else {
-      setStep(2);
-      showSection("stepCreate");
-    }
+  try {
+    /* Final guard — race condition check */
+    const ex = await _db.collection("users").where("userType","==","systemAdmin").limit(1).get();
+    if (!ex.empty) { showErr("e3","A System Admin already exists."); return; }
+
+    /* Username uniqueness */
+    const us = await _db.collection("users").where("username","==",uname).get();
+    if (!us.empty) { showErr("e3","Username already taken."); return; }
+
+    /* Create Auth user */
+    const cred = await _auth.createUserWithEmailAndPassword(email, pwd);
+    const ts   = firebase.firestore.Timestamp.now();
+
+    /* Firestore profile */
+    await _db.collection("users").doc(cred.user.uid).set({
+      name, email, username: uname,
+      office: "", userType: "systemAdmin",
+      isActive: true, status: "active",
+      dateRegistered: ts, approvedBy: "system-setup", approvedAt: ts
+    });
+
+    /* Audit entry */
+    await _db.collection("auditLog").add({
+      action: "setup", targetType: "user",
+      targetId: cred.user.uid, targetName: name,
+      details: "System Admin created via first-time setup",
+      performedBy: cred.user.uid, performedByName: name, timestamp: ts
+    });
+
+    await _auth.signOut();
+    show("pDone");
+
+  } catch(err) {
+    let msg = err.message;
+    if (msg.includes("email-already-in-use")) msg = "An account with this email already exists in Firebase Auth.";
+    if (msg.includes("invalid-email"))        msg = "Invalid email address format.";
+    showErr("e3", msg);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Create System Admin Account';
   }
-
-  // ── Create System Admin ──────────────────────────────────
-  document.getElementById("setupForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    hideError();
-
-    const name     = document.getElementById("saName").value.trim();
-    const email    = document.getElementById("saEmail").value.trim();
-    const username = document.getElementById("saUsername").value.trim();
-    const password = document.getElementById("saPassword").value;
-    const confirm  = document.getElementById("saConfirm").value;
-    const btn      = document.getElementById("createBtn");
-
-    // Validate
-    if (password !== confirm)  { showError("Passwords do not match."); return; }
-    if (password.length < 8)   { showError("Password must be at least 8 characters."); return; }
-    if (!name || !email || !username) { showError("All fields are required."); return; }
-
-    btn.disabled  = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating account…';
-
-    try {
-      // Double-check no sysadmin was created while form was open
-      const existing = await db.collection("users")
-        .where("userType","==","systemAdmin").limit(1).get();
-      if (!existing.empty) {
-        showError("A System Admin already exists. Redirecting…");
-        setTimeout(() => window.location.href="index.html", 2000);
-        return;
-      }
-
-      // Check username uniqueness
-      const uSnap = await db.collection("users").where("username","==",username).get();
-      if (!uSnap.empty) { showError("Username already taken."); return; }
-
-      // Create Firebase Auth account
-      const cred = await auth.createUserWithEmailAndPassword(email, password);
-
-      // Save Firestore profile
-      await db.collection("users").doc(cred.user.uid).set({
-        name,
-        email,
-        username,
-        office         : "",
-        userType       : "systemAdmin",
-        isActive       : true,
-        status         : "active",
-        dateRegistered : firebase.firestore.Timestamp.now(),
-        approvedBy     : "system-setup",
-        approvedAt     : firebase.firestore.Timestamp.now()
-      });
-
-      // Log the setup action
-      await db.collection("auditLog").add({
-        action          : "setup",
-        targetType      : "user",
-        targetId        : cred.user.uid,
-        targetName      : name,
-        details         : "System Admin created via first-time setup",
-        performedBy     : cred.user.uid,
-        performedByName : name,
-        timestamp       : firebase.firestore.Timestamp.now()
-      });
-
-      // Sign out so user goes through normal login
-      await auth.signOut();
-
-      // Show success
-      setStep(3);
-      showSection("stepDone");
-
-    } catch (err) {
-      let msg = err.message;
-      if (msg.includes("email-already-in-use")) msg = "An account with this email already exists.";
-      if (msg.includes("invalid-email"))        msg = "Invalid email address.";
-      showError(msg);
-      btn.disabled  = false;
-      btn.innerHTML = '<i class="fa-solid fa-shield-halved me-2"></i>Create System Admin Account';
-    }
-  });
-
-  // ── Start ────────────────────────────────────────────────
-  boot();
+}
 </script>
 </body>
 </html>
