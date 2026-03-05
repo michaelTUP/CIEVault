@@ -33,10 +33,13 @@
 <!-- ════════════════════════════════ SIDEBAR ════════════════════════════════ -->
 <aside id="sidebar" class="sidebar">
 
-  <!-- Logo -->
+  <!-- Logo + hamburger (mobile) -->
   <div class="sidebar-logo">
     <div class="sidebar-logo-icon"><i class="fa-solid fa-vault"></i></div>
     <div class="sidebar-logo-text">DocVault</div>
+    <button class="sidebar-hamburger" onclick="toggleSidebar()" title="Close menu">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
   </div>
 
   <!-- User card -->
@@ -98,19 +101,10 @@
 <!-- ════════════════════════════════ MAIN ════════════════════════════════ -->
 <div class="app-main">
 
-  <!-- Top bar -->
-  <header class="app-topbar">
-    <button class="topbar-hamburger" onclick="toggleSidebar()">
-      <i class="fa-solid fa-bars"></i>
-    </button>
-    <div class="topbar-title" id="topbarTitle">Dashboard</div>
-    <div class="topbar-actions">
-      <button id="regDocBtn" class="btn-dms-primary btn-sm" onclick="openAddDocModal()">
-        <i class="fa-solid fa-plus me-1"></i>
-        <span class="d-none d-sm-inline">Register Doc</span>
-      </button>
-    </div>
-  </header>
+  <!-- Floating hamburger for mobile (only shows when sidebar is hidden) -->
+  <button class="mobile-menu-fab" onclick="toggleSidebar()" title="Menu">
+    <i class="fa-solid fa-bars"></i>
+  </button>
 
   <!-- Config banner -->
   <div id="configBanner" class="config-banner" style="display:none">
@@ -539,11 +533,11 @@
   </div>
 </div>
 
-<!-- ── Preview Modal ── -->
+<!-- ── Preview Modal (fullscreen) ── -->
 <div class="modal fade" id="previewModal" tabindex="-1">
-  <div class="modal-dialog modal-fullscreen-lg-down modal-xl">
-    <div class="modal-content dms-modal">
-      <div class="modal-header dms-modal-header">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content dms-modal" style="border-radius:0;border:none">
+      <div class="modal-header dms-modal-header" style="border-radius:0">
         <div class="d-flex align-items-center gap-2 overflow-hidden">
           <h5 class="modal-title text-truncate" id="previewFileName">Document Preview</h5>
           <span id="previewFileType" class="badge"></span>
@@ -558,6 +552,7 @@
       </div>
       <div class="modal-body preview-modal-body p-0">
         <div class="preview-layout">
+
           <!-- iframe pane -->
           <div class="preview-frame-pane">
             <div id="previewFrameWrap" class="preview-frame-wrap">
@@ -567,9 +562,15 @@
               <i class="fa-solid fa-file fa-3x mb-3" style="color:var(--border-light)"></i>
               <div>Preview not available</div>
             </div>
+            <!-- Toggle button on the right edge of the iframe pane -->
+            <button class="meta-toggle-btn" id="metaToggleBtn" onclick="toggleMetaPanel()" title="Show details">
+              <i class="fa-solid fa-circle-info" id="metaToggleIcon"></i>
+              <span id="metaToggleLabel" style="writing-mode:vertical-rl;font-size:10px;letter-spacing:.5px">Details</span>
+            </button>
           </div>
-          <!-- metadata pane -->
-          <div class="preview-meta-pane">
+
+          <!-- Metadata panel — hidden by default -->
+          <div class="preview-meta-pane" id="previewMetaPane">
             <div class="meta-section">
               <div class="meta-label">Subject</div>
               <div id="prevSubject" class="meta-value"></div>
@@ -580,11 +581,11 @@
             </div>
             <div class="meta-row">
               <div class="meta-section">
-                <div class="meta-label">Document Date</div>
+                <div class="meta-label">Doc Date</div>
                 <div id="prevCreated" class="meta-value"></div>
               </div>
               <div class="meta-section">
-                <div class="meta-label">Registered</div>
+                <div class="meta-label">Added</div>
                 <div id="prevAdded" class="meta-value"></div>
               </div>
             </div>
@@ -604,7 +605,7 @@
             </div>
             <div class="meta-section">
               <div class="meta-label">Last Modified</div>
-              <div id="prevModified" class="meta-value small"></div>
+              <div id="prevModified" class="meta-value" style="font-size:12px"></div>
             </div>
             <div class="meta-section">
               <div class="meta-label">Tags</div>
@@ -616,9 +617,10 @@
             </div>
             <div class="meta-section">
               <div class="meta-label">Notes</div>
-              <div id="prevNotes" class="meta-value small text-muted"></div>
+              <div id="prevNotes" class="meta-value" style="font-size:12px;color:var(--text-muted)"></div>
             </div>
           </div>
+
         </div>
       </div>
     </div>

@@ -349,6 +349,14 @@ async function handleDocFormSubmit(e) {
     const tagInput  = document.getElementById("tagsInput");
     const tags      = tagInput?._getTags ? tagInput._getTags() : [];
 
+    // Tags are required
+    if (!tags.length) {
+      showToast("Please select at least one tag before saving.","error");
+      btn.disabled  = false;
+      btn.innerHTML = _editDocId ? "Update Document" : "Save Document";
+      return;
+    }
+
     const data = {
       driveFileId          : fileId,
       driveFileLink        : url,

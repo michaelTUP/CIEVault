@@ -174,11 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthGuard(async (user) => {
     setupSidebarForRole(user);
 
-    const fsEL = document.getElementById("firebaseStatus");
-    if (fsEL) {
-      fsEL.innerHTML = '<i class="fa-solid fa-circle text-success me-1" style="font-size: 8px;"></i>Connected';
-      fsEL.style.color = "#5bc9a3";
-    }
     // Load shared data in parallel
     await Promise.all([
       fetchOffices(),
@@ -227,9 +222,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sidebar overlay
     document.getElementById("sidebarOverlay")?.addEventListener("click", toggleSidebar);
 
-    // Preview modal cleanup
+    // Preview modal cleanup — also reset meta panel to closed
     document.getElementById("previewModal")?.addEventListener("hidden.bs.modal", () => {
       document.getElementById("previewFrame").src = "";
+      // Reset metadata panel to hidden state
+      const pane = document.getElementById("previewMetaPane");
+      if (pane) pane.classList.remove("open");
+      const icon  = document.getElementById("metaToggleIcon");
+      const label = document.getElementById("metaToggleLabel");
+      if (icon)  icon.className  = "fa-solid fa-circle-info";
+      if (label) label.textContent = "Details";
     });
 
     // Logout
@@ -239,3 +241,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isSuperPlus(user)) renderPendingPanel();
   });
 });
+
+// ── Toggle metadata panel in preview modal ───────────────
+function toggleMetaPanel() {
+  const pane  = document.getElementById("previewMetaPane");
+  const icon  = document.getElementById("metaToggleIcon");
+  const label = document.getElementById("metaToggleLabel");
+  const isOpen = pane.classList.toggle("open");
+  icon.className   = isOpen ? "fa-solid fa-angles-right" : "fa-solid fa-circle-info";
+  label.textContent = isOpen ? "Hide" : "Details";
+}
