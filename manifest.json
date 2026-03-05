@@ -2,7 +2,7 @@
   "name": "DocVault DMS",
   "short_name": "DocVault",
   "description": "Document Management System",
-  "start_url": "/index.html",
+  "start_url": "/CIEVault/index.html",
   "display": "standalone",
   "background_color": "#0c1117",
   "theme_color": "#f0a033",
