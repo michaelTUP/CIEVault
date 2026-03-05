@@ -84,6 +84,7 @@ async function fetchDocuments() {
     applyFilters();
     updateStats();
     updateFilterDropdowns();
+    if(_viewLoaded && _viewLoaded["dashboard"]) renderDashboard();
   } catch(e) {
     showToast("Failed to load documents: "+e.message,"error");
   } finally {
