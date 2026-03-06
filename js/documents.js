@@ -1,3 +1,4 @@
+
 /**
  * documents.js — Document CRUD, access control, version history
  */
@@ -133,7 +134,6 @@ function renderDocumentTable(docs) {
         ${(doc.tags||[]).slice(0,3).map(t=>`<span class="tag-pill">${escapeHtml(t)}</span>`).join("")}
         ${(doc.tags||[]).length>3?`<span class="tag-pill tag-more">+${doc.tags.length-3}</span>`:""}
       </td>
-      <td><span class="vis-badge ${visibilityBadgeClass(doc.visibility)}">${escapeHtml(doc.visibility||"Internal")}</span></td>
       <td class="text-muted small">${formatDate(doc.dateCreated)}</td>
       <td class="text-muted small">v${escapeHtml(doc.version||"1.0")}</td>
       <td onclick="event.stopPropagation()">
