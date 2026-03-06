@@ -36,7 +36,7 @@ function applyFilters() {
     // Tags: doc must have ALL selected tags
     if (tags.length) {
       const docTags = doc.tags || [];
-      if (!tags.every(t => docTags.includes(t))) return false;
+      if (!tags.some(t => docTags.includes(t))) return false;
     }
 
     if (from || to) {
