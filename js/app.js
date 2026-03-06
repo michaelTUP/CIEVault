@@ -1,3 +1,4 @@
+
 /**
  * app.js — Main app bootstrap, navigation, dashboard
  */
@@ -21,12 +22,13 @@ function showView(view) {
   // Lazy load view data
   if (!_viewLoaded[view]) {
     _viewLoaded[view] = true;
-    if (view==="users")     { fetchUsers(); }
     if (view==="tags")      { fetchTags().then(renderTagsTable); }
     if (view==="offices")   { fetchOffices().then(renderOfficesTable); }
     if (view==="audit")     { renderAuditLog(); }
     if (view==="dashboard") { renderDashboard(); }
   }
+  // Always refresh users + pending panel when switching to users view
+  if (view==="users") { fetchUsers(); }
 }
 
 // ── Sidebar — show/hide items per role ───────────────────
