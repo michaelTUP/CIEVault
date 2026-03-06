@@ -1,4 +1,4 @@
-/**
+**
  * users.js — User CRUD, approval workflow, people directory
  */
 
@@ -15,6 +15,7 @@ async function fetchUsers() {
     await idbSave("users", allUsers);
     renderUsersTable(allUsers);
     updatePendingBadge();
+    renderPendingPanel();
     return allUsers;
   } catch(e) { console.warn("fetchUsers:", e); return allUsers; }
 }
@@ -105,34 +106,47 @@ function renderUsersTable(users) {
 
 // ── Pending approvals panel ───────────────────────────────
 function renderPendingPanel() {
-  const wrap = document.getElementById("pendingUsersPanel");
-  if (!wrap) return;
   const pending = allUsers.filter(u => u.status === "pending");
-  if (!pending.length) {
-    wrap.innerHTML = `<div class="text-center text-muted py-3 small">No pending registrations.</div>`;
-    return;
-  }
-  wrap.innerHTML = pending.map(u => `
-    <div class="pending-card">
-      <div class="d-flex align-items-center gap-3">
-        <div class="person-avatar" style="background:${avatarColor(u.name)};width:36px;height:36px">
-          ${initials(u.name)}
+  const count   = pending.length;
+
+  // Update all badge instances
+  ["pendingBadge","pendingBadge2","pendingBadge3"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent    = count;
+    el.style.display  = count > 0 ? "inline-flex" : "none";
+  });
+
+  // Render all panel instances
+  ["pendingUsersPanel","pendingUsersPanel2"].forEach(id => {
+    const wrap = document.getElementById(id);
+    if (!wrap) return;
+    if (!count) {
+      wrap.innerHTML = `<div class="text-center text-muted py-3 small">No pending registrations.</div>`;
+      return;
+    }
+    wrap.innerHTML = pending.map(u => `
+      <div class="pending-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="person-avatar" style="background:${avatarColor(u.name)};width:36px;height:36px">
+            ${initials(u.name)}
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold">${escapeHtml(u.name)}</div>
+            <div class="text-muted small">${escapeHtml(u.email)} · ${escapeHtml(u.office||"No office")}</div>
+            <div class="text-muted small">Registered: ${formatDate(u.dateRegistered)}</div>
+          </div>
+          <div class="d-flex flex-column gap-1">
+            <button class="btn-dms-primary btn-sm" onclick="approveUser('${u.id}')">
+              <i class="fa-solid fa-check me-1"></i>Approve
+            </button>
+            <button class="btn-dms-secondary btn-sm" onclick="rejectUser('${u.id}','${escapeHtml(u.name)}')">
+              <i class="fa-solid fa-xmark me-1"></i>Reject
+            </button>
+          </div>
         </div>
-        <div class="flex-grow-1">
-          <div class="fw-semibold">${escapeHtml(u.name)}</div>
-          <div class="text-muted small">${escapeHtml(u.email)} · ${escapeHtml(u.office||"No office")}</div>
-          <div class="text-muted small">Registered: ${formatDate(u.dateRegistered)}</div>
-        </div>
-        <div class="d-flex flex-column gap-1">
-          <button class="btn-dms-primary btn-sm" onclick="approveUser('${u.id}')">
-            <i class="fa-solid fa-check me-1"></i>Approve
-          </button>
-          <button class="btn-dms-secondary btn-sm" onclick="rejectUser('${u.id}','${escapeHtml(u.name)}')">
-            <i class="fa-solid fa-xmark me-1"></i>Reject
-          </button>
-        </div>
-      </div>
-    </div>`).join("");
+      </div>`).join("");
+  });
 }
 
 // ── Approve user ─────────────────────────────────────────
