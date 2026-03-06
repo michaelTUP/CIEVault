@@ -1,4 +1,3 @@
-
 /**
  * search.js — Document search, filter, and sort
  */

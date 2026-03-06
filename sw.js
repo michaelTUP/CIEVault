@@ -1,4 +1,3 @@
-
 /**
  * sw.js — DocVault Service Worker
  * Strategy: Cache-first for static assets, network-first for API calls
