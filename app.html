@@ -218,12 +218,31 @@
         <option value="video">Video</option>
         <option value="other">Other</option>
       </select>
-      <select id="filterVisibility" class="dms-select filter-select">
-        <option value="">All Visibility</option>
-        <option value="Public">Public</option>
-        <option value="Internal">Internal</option>
-        <option value="Confidential">Confidential</option>
-      </select>
+
+      <!-- Tags multi-select dropdown -->
+      <div class="tag-filter-wrap" id="tagFilterWrap">
+        <button type="button" class="dms-select filter-select tag-filter-btn" id="tagFilterBtn"
+                onclick="toggleTagFilterDropdown()">
+          <i class="fa-solid fa-tag me-1"></i>
+          <span id="tagFilterLabel">All Tags</span>
+          <i class="fa-solid fa-chevron-down ms-auto" style="font-size:11px"></i>
+        </button>
+        <div class="tag-filter-dropdown" id="tagFilterDropdown" style="display:none">
+          <div class="tag-filter-search-wrap">
+            <input type="text" id="tagFilterSearch" class="dms-input" placeholder="Search tags…"
+                   oninput="filterTagOptions(this.value)" />
+          </div>
+          <div id="tagFilterOptions" class="tag-filter-options">
+            <div class="text-muted small p-2">Loading tags…</div>
+          </div>
+          <div class="tag-filter-footer">
+            <button type="button" class="btn-clear-filters" onclick="clearTagFilter()">
+              <i class="fa-solid fa-xmark me-1"></i>Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
       <input type="date" id="filterDateFrom" class="dms-input filter-date" title="Date From" />
       <input type="date" id="filterDateTo"   class="dms-input filter-date" title="Date To" />
     </div>
@@ -236,15 +255,6 @@
       </button>
     </div>
 
-    <!-- Stats chips -->
-    <div class="stats-chips">
-      <span class="stat-chip"><i class="fa-solid fa-file-lines me-1"></i>Total: <b id="statTotal">0</b></span>
-      <span class="stat-chip stat-pdf"><i class="fa-solid fa-file-pdf me-1"></i>PDF: <b id="statPDF">0</b></span>
-      <span class="stat-chip stat-doc"><i class="fa-solid fa-file-word me-1"></i>Doc: <b id="statDOC">0</b></span>
-      <span class="stat-chip stat-xls"><i class="fa-solid fa-file-excel me-1"></i>XLS: <b id="statXLS">0</b></span>
-      <span class="stat-chip stat-ppt"><i class="fa-solid fa-file-powerpoint me-1"></i>PPT: <b id="statPPT">0</b></span>
-    </div>
-
     <!-- Document table -->
     <div id="tableWrapper" class="table-wrapper" style="display:none">
       <table class="dms-table">
@@ -254,7 +264,6 @@
             <th class="sortable" data-col="fileName">File Name <i class="fa-solid fa-sort sort-icon"></i></th>
             <th class="sortable" data-col="offices">Office <i class="fa-solid fa-sort sort-icon"></i></th>
             <th>Tags</th>
-            <th>Visibility</th>
             <th class="sortable" data-col="dateCreated">Date <i class="fa-solid fa-sort sort-icon"></i></th>
             <th>Version</th>
             <th style="width:110px">Actions</th>

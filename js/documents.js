@@ -1,4 +1,3 @@
-
 /**
  * documents.js — Document CRUD, access control, version history
  */
