@@ -1,4 +1,5 @@
-/**git 
+
+/**
  * users.js — User CRUD, approval workflow, people directory
  */
 
