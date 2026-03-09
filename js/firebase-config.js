@@ -1,15 +1,4 @@
-/**
- * firebase-config.js
- * ─────────────────────────────────────────────────────────
- * ★ REPLACE the values below with your real Firebase project credentials ★
- *
- * Where to find them:
- *   1. Go to https://console.firebase.google.com
- *   2. Click your project → ⚙ Project Settings
- *   3. Scroll to "Your apps" → click your web app
- *   4. Copy each value from the firebaseConfig object shown there
- * ─────────────────────────────────────────────────────────
- */
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyCfg6F2mkxoJxl7_UsPUoZDRkzM2Oo_3Jw",
@@ -27,7 +16,7 @@ const FIREBASE_CONFIGURED = !Object.values(firebaseConfig).some(
 
 // ── Initialize ───────────────────────────────────────────
 let db   = null;
-let auth = null;   // ← auth MUST be declared here for auth.js to work
+let auth = null;   
 
 if (FIREBASE_CONFIGURED) {
   firebase.initializeApp(firebaseConfig);
