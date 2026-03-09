@@ -1,4 +1,3 @@
-
 /**
  * users.js — User CRUD, approval workflow, people directory
  */
@@ -57,15 +56,25 @@ function renderUsersTable(users) {
   if (wrap)  wrap.style.display  = "block";
 
   tbody.innerHTML = list.map((u,i) => {
-    const color  = USER_TYPE_COLORS[u.userType] || "#94a3b8";
-    const label  = USER_TYPE_LABELS[u.userType] || u.userType;
-    const status = u.status === "pending" ? `<span class="status-badge status-pending">Pending</span>`
-                 : u.status === "rejected"? `<span class="status-badge status-inactive">Rejected</span>`
-                 : u.isActive             ? `<span class="status-badge status-active">Active</span>`
-                 :                          `<span class="status-badge status-inactive">Inactive</span>`;
-    const isPending = u.status === "pending";
-    const isSA      = u.userType === "systemAdmin";
-    const canEdit   = isSA ? isSystemAdmin(actor) : isSuperPlus(actor);
+    const color     = USER_TYPE_COLORS[u.userType] || "#94a3b8";
+    const label     = USER_TYPE_LABELS[u.userType] || u.userType;
+    const status    = u.status === "pending" ? `<span class="status-badge status-pending">Pending</span>`
+                    : u.status === "rejected"? `<span class="status-badge status-inactive">Rejected</span>`
+                    : u.isActive             ? `<span class="status-badge status-active">Active</span>`
+                    :                          `<span class="status-badge status-inactive">Inactive</span>`;
+    const isPending  = u.status === "pending";
+    const isOwnAcct  = u.id === actor.id;
+
+    // System Admin can edit anyone except themselves and other system admins
+    // Super Admin can ONLY edit Guest, Regular, Admin — blocked from superAdmin + systemAdmin
+    let canEdit = false;
+    if (!isOwnAcct) {
+      if (isSystemAdmin(actor)) {
+        canEdit = u.userType !== "systemAdmin";
+      } else if (actor.userType === "superAdmin") {
+        canEdit = (u.userType === "guest" || u.userType === "regular" || u.userType === "admin");
+      }
+    }
 
     return `
     <tr class="animate-row" style="animation-delay:${i*20}ms">
@@ -81,7 +90,7 @@ function renderUsersTable(users) {
         </div>
       </td>
       <td class="text-muted small">${escapeHtml(u.email||"")}</td>
-      <td>${escapeHtml(u.office||"—")}</td>
+      <td>${escapeHtml((Array.isArray(u.offices) ? u.offices : (u.office ? [u.office] : [])).join(", ") || "—")}</td>
       <td><span style="color:${color};font-weight:600;font-size:12px">${label}</span></td>
       <td>${status}</td>
       <td>${formatDate(u.dateRegistered)}</td>
@@ -210,19 +219,43 @@ let _editUserId = null;
 function openEditUserModal(id) {
   const u     = allUsers.find(x => x.id === id);
   if (!u) return;
-  _editUserId = id;
   const actor = getCurrentUser();
 
-  document.getElementById("editUserName").value   = u.name   || "";
-  document.getElementById("editUserEmail").value  = u.email  || "";
+  // Permission check
+  if (u.id === actor.id) { showToast("You cannot edit your own account.","error"); return; }
+  if (actor.userType === "superAdmin" && !["guest","regular","admin"].includes(u.userType)) {
+    showToast("Super Admin can only edit Guest, Regular, and Admin users.","error"); return;
+  }
+  if (isSystemAdmin(actor) && u.userType === "systemAdmin") {
+    showToast("System Admin cannot edit another System Admin.","error"); return;
+  }
+
+  _editUserId = id;
+
+  document.getElementById("editUserName").value     = u.name  || "";
+  document.getElementById("editUserEmail").value    = u.email || "";
   document.getElementById("editUserUsername").value = u.username || "";
   document.getElementById("editUserActive").checked = !!u.isActive;
 
-  populateOfficeSelect("editUserOffice", u.office || "");
+  // Multi-office checkboxes
+  const userOffices = Array.isArray(u.offices) ? u.offices
+    : (u.office ? [u.office] : []);
+  const officeWrap = document.getElementById("editUserOfficesWrap");
+  officeWrap.innerHTML = allOffices.length
+    ? allOffices.map(o => `
+        <label class="checkbox-pill ${userOffices.includes(o.name) ? "selected" : ""}">
+          <input type="checkbox" value="${escapeHtml(o.name)}"
+                 ${userOffices.includes(o.name) ? "checked" : ""}
+                 onchange="this.closest('label').classList.toggle('selected',this.checked)" />
+          ${escapeHtml(o.name)}
+        </label>`).join("")
+    : `<div class="text-muted small">No offices available.</div>`;
 
-  // User type select
-  const typeOpts = USER_TYPE_ORDER
-    .filter(t => t !== "systemAdmin" || isSystemAdmin(actor))
+  // User type select — Super Admin can only assign up to Admin level
+  const allowedTypes = actor.userType === "superAdmin"
+    ? ["guest","regular","admin"]
+    : USER_TYPE_ORDER.filter(t => t !== "systemAdmin" || isSystemAdmin(actor));
+  const typeOpts = allowedTypes
     .map(t => `<option value="${t}" ${t===u.userType?"selected":""}>${USER_TYPE_LABELS[t]}</option>`)
     .join("");
   document.getElementById("editUserType").innerHTML = typeOpts;
@@ -232,11 +265,23 @@ function openEditUserModal(id) {
 
 async function handleEditUserSubmit(e) {
   e.preventDefault();
-  const actor = getCurrentUser();
+  const actor    = getCurrentUser();
+  const target   = allUsers.find(x => x.id === _editUserId);
   const name     = document.getElementById("editUserName").value.trim();
-  const office   = document.getElementById("editUserOffice").value;
   const userType = document.getElementById("editUserType").value;
   const isActive = document.getElementById("editUserActive").checked;
+  const offices  = Array.from(
+    document.querySelectorAll("#editUserOfficesWrap input[type='checkbox']:checked")
+  ).map(cb => cb.value);
+
+  // Final permission guard
+  if (target) {
+    if (actor.userType === "superAdmin" &&
+        !(target.userType === "guest" || target.userType === "regular" || target.userType === "admin")) {
+      showToast("Super Admin can only edit Guest, Regular, and Admin users.", "error");
+      return;
+    }
+  }
 
   if (userType === "systemAdmin" && !isSystemAdmin(actor)) {
     showToast("Only System Admin can assign System Admin role.","error");
@@ -244,8 +289,8 @@ async function handleEditUserSubmit(e) {
   }
 
   try {
-    await db.collection(C.USERS).doc(_editUserId).update({ name, office, userType, isActive });
-    await logAudit("update","user",_editUserId,name,`Updated profile. Type: ${userType}`);
+    await db.collection(C.USERS).doc(_editUserId).update({ name, offices, userType, isActive });
+    await logAudit("update","user",_editUserId,name,`Updated profile. Type: ${userType}, Offices: ${offices.join(", ")}`);
     showToast("User updated.","success");
     closeModal("editUserModal");
     await fetchUsers();
@@ -254,6 +299,18 @@ async function handleEditUserSubmit(e) {
 
 // ── Delete user ───────────────────────────────────────────
 function confirmDeleteUser(id, name) {
+  const actor = getCurrentUser();
+  const u     = allUsers.find(x => x.id === id);
+
+  // Permission check
+  if (u && u.id === actor.id) { showToast("You cannot delete your own account.","error"); return; }
+  if (u && actor.userType === "superAdmin" && !["guest","regular","admin"].includes(u.userType)) {
+    showToast("Super Admin can only delete Guest, Regular, and Admin users.","error"); return;
+  }
+  if (u && isSystemAdmin(actor) && u.userType === "systemAdmin") {
+    showToast("System Admin cannot delete another System Admin.","error"); return;
+  }
+
   document.getElementById("deleteUserName").textContent = name;
   document.getElementById("confirmDeleteUserBtn").onclick = async () => {
     try {

@@ -77,22 +77,35 @@ async function handleRegister(e) {
     // Create Firebase Auth account
     const cred = await auth.createUserWithEmailAndPassword(email, password);
 
-    // Save profile to Firestore (status = pending)
-    await db.collection(C.USERS).doc(cred.user.uid).set({
-      name,
-      email,
-      username   : email,   // use email as username internally
-      office,
-      userType   : "regular",   // default — overridden at approval
-      isActive   : false,
-      status     : "pending",
-      dateRegistered : nowTimestamp(),
-      approvedBy : null,
-      approvedAt : null
-    });
+    // Save profile to Firestore — if this fails, delete the Auth account so user can retry
+    try {
+      await db.collection(C.USERS).doc(cred.user.uid).set({
+        name,
+        email,
+        username       : email,
+        office,          // keep for backward compat
+        offices        : [office], // multi-office array
+        userType       : "regular",
+        isActive       : false,
+        status         : "pending",
+        dateRegistered : nowTimestamp(),
+        approvedBy     : null,
+        approvedAt     : null
+      });
+    } catch (fsErr) {
+      await cred.user.delete(); // rollback Auth account
+      throw new Error("Could not save your profile. Please try again.");
+    }
 
     await auth.signOut();
     await logAuditPublic("register", "user", cred.user.uid, name, "Self-registration submitted");
+
+    // Clear the form
+    document.getElementById("regName").value     = "";
+    document.getElementById("regEmail").value    = "";
+    document.getElementById("regOffice").value   = "";
+    document.getElementById("regPassword").value = "";
+    document.getElementById("regConfirm").value  = "";
 
     // Show success, switch to login tab
     showToast("Registration submitted! Wait for administrator approval.", "success");

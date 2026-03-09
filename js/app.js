@@ -1,4 +1,3 @@
-
 /**
  * app.js — Main app bootstrap, navigation, dashboard
  */
@@ -40,7 +39,10 @@ function setupSidebarForRole(user) {
   const avatarEl= document.getElementById("sidebarAvatar");
   if (nameEl)   nameEl.textContent   = user.name || "User";
   if (roleEl)   roleEl.textContent   = USER_TYPE_LABELS[user.userType] || user.userType;
-  if (officeEl) officeEl.textContent = user.office || "";
+  if (officeEl) {
+    const offices = Array.isArray(user.offices) ? user.offices : (user.office ? [user.office] : []);
+    officeEl.textContent = offices.join(", ") || "";
+  }
   if (avatarEl) {
     avatarEl.textContent   = initials(user.name);
     avatarEl.style.background = avatarColor(user.name);

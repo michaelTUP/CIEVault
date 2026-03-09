@@ -11,20 +11,16 @@ function canViewDoc(doc, user) {
   if (!user) return false;
   if (isSuperPlus(user)) return true;
 
-  const isUploader = doc.uploadedBy === user.id;
-  const isInvolved = (doc.peopleInvolvedIds||[]).includes(user.id);
-  const sameOffice = (doc.offices||[]).some(o => o === user.office);
-  const isAdminPlus_ = isAdminPlus(user);
+  const isUploader  = doc.uploadedBy === user.id;
+  const isInvolved  = (doc.peopleInvolvedIds||[]).includes(user.id);
+  const userOffices = Array.isArray(user.offices) ? user.offices : (user.office ? [user.office] : []);
+  const sameOffice  = (doc.offices||[]).some(o => userOffices.includes(o));
 
   switch (doc.visibility) {
-    case "Public":
-      return true;
-    case "Internal":
-      return isUploader || sameOffice || isInvolved || isAdminPlus_;
-    case "Confidential":
-      return isUploader;
-    default:
-      return isUploader;
+    case "Public":      return true;
+    case "Internal":    return isUploader || sameOffice || isInvolved || isAdminPlus(user);
+    case "Confidential":return isUploader;
+    default:            return isUploader;
   }
 }
 
@@ -33,19 +29,16 @@ function canEditDoc(doc, user) {
   if (isSuperPlus(user)) return true;
   if (isGuest(user)) return false;
 
-  const isUploader = doc.uploadedBy === user.id;
-  const sameOffice = (doc.offices||[]).some(o => o === user.office);
-  const isInvolved = (doc.peopleInvolvedIds||[]).includes(user.id);
+  const isUploader  = doc.uploadedBy === user.id;
+  const userOffices = Array.isArray(user.offices) ? user.offices : (user.office ? [user.office] : []);
+  const sameOffice  = (doc.offices||[]).some(o => userOffices.includes(o));
+  const isInvolved  = (doc.peopleInvolvedIds||[]).includes(user.id);
 
   switch (doc.visibility) {
-    case "Public":
-      return isRegularPlus(user);
-    case "Internal":
-      return isUploader || (isAdminPlus(user) && (sameOffice || isInvolved));
-    case "Confidential":
-      return isUploader;
-    default:
-      return isUploader;
+    case "Public":       return isRegularPlus(user);
+    case "Internal":     return isUploader || (isAdminPlus(user) && (sameOffice || isInvolved));
+    case "Confidential": return isUploader;
+    default:             return isUploader;
   }
 }
 
