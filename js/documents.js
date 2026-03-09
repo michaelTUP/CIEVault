@@ -9,24 +9,32 @@ let _editDocId    = null;
 // ── Access control checks ─────────────────────────────────
 function canViewDoc(doc, user) {
   if (!user) return false;
-  if (isSuperPlus(user)) return true;
+
+  // System Admin sees everything
+  if (isSystemAdmin(user)) return true;
 
   const isUploader  = doc.uploadedBy === user.id;
   const isInvolved  = (doc.peopleInvolvedIds||[]).includes(user.id);
   const userOffices = Array.isArray(user.offices) ? user.offices : (user.office ? [user.office] : []);
   const sameOffice  = (doc.offices||[]).some(o => userOffices.includes(o));
 
-  switch (doc.visibility) {
-    case "Public":      return true;
-    case "Internal":    return isUploader || sameOffice || isInvolved || isAdminPlus(user);
-    case "Confidential":return isUploader;
-    default:            return isUploader;
+  // Guest — Public only
+  if (isGuest(user)) return doc.visibility === "Public";
+
+  // Regular — own uploads + people involved (any visibility)
+  if (user.userType === "regular") return isUploader || isInvolved;
+
+  // Admin / Super Admin — own uploads + people involved + any doc in their office(s)
+  if (user.userType === "admin" || user.userType === "superAdmin") {
+    return isUploader || isInvolved || sameOffice;
   }
+
+  return false;
 }
 
 function canEditDoc(doc, user) {
   if (!user) return false;
-  if (isSuperPlus(user)) return true;
+  if (isSystemAdmin(user)) return true;
   if (isGuest(user)) return false;
 
   const isUploader  = doc.uploadedBy === user.id;
@@ -34,12 +42,15 @@ function canEditDoc(doc, user) {
   const sameOffice  = (doc.offices||[]).some(o => userOffices.includes(o));
   const isInvolved  = (doc.peopleInvolvedIds||[]).includes(user.id);
 
-  switch (doc.visibility) {
-    case "Public":       return isRegularPlus(user);
-    case "Internal":     return isUploader || (isAdminPlus(user) && (sameOffice || isInvolved));
-    case "Confidential": return isUploader;
-    default:             return isUploader;
+  // Regular — can only edit their own uploads
+  if (user.userType === "regular") return isUploader;
+
+  // Admin / Super Admin — own uploads + docs in their office(s)
+  if (user.userType === "admin" || user.userType === "superAdmin") {
+    return isUploader || sameOffice || isInvolved;
   }
+
+  return false;
 }
 
 function canDeleteDoc(doc, user) {
