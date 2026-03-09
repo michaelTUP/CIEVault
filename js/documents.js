@@ -21,8 +21,13 @@ function canViewDoc(doc, user) {
   // Guest — Public only
   if (isGuest(user)) return doc.visibility === "Public";
 
-  // Regular — own uploads + people involved (any visibility)
-  if (user.userType === "regular") return isUploader || isInvolved;
+  // Regular — own uploads + people involved (any visibility) + Internal docs from their office(s)
+  if (user.userType === "regular") {
+    if (isUploader || isInvolved) return true;
+    if (doc.visibility === "Public") return true;
+    if (doc.visibility === "Internal" && sameOffice) return true;
+    return false;
+  }
 
   // Admin / Super Admin — own uploads + people involved + any doc in their office(s)
   if (user.userType === "admin" || user.userType === "superAdmin") {
