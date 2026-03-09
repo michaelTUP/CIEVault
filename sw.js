@@ -3,7 +3,7 @@
  * Strategy: Cache-first for static assets, network-first for API calls
  */
 
-const CACHE_NAME    = "docvault-v5";
+const CACHE_NAME    = "docvault-v6";
 const STATIC_ASSETS = [
   "./",
   "./index.html",

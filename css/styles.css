@@ -956,3 +956,24 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
   background: rgba(240,160,51,.15);
   border-color: var(--accent); color: var(--accent);
 }
+
+/* ── Office search in doc form ───────────────────────────── */
+.office-search-wrap { margin-bottom: 8px; }
+.office-search-wrap input { font-size: 13px; padding: 6px 10px; }
+
+/* ── Tag browse dropdown in doc form ────────────────────── */
+.tag-browse-wrap { position: relative; margin-top: 6px; }
+.tag-browse-btn {
+  display: flex; align-items: center; gap: 6px;
+  width: 100%; padding: 6px 12px; font-size: 12.5px;
+  background: var(--bg-elevated); border: 1px solid var(--border-light);
+  border-radius: 8px; color: var(--text-sub); cursor: pointer;
+  transition: all .18s;
+}
+.tag-browse-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tag-browse-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  z-index: 400; background: var(--bg-elevated);
+  border: 1px solid var(--border-light); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}

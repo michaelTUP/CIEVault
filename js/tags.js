@@ -166,3 +166,65 @@ function confirmDeleteTag(id, name) {
   };
   openModal("deleteTagModal");
 }
+
+// ── Office search in doc form ─────────────────────────────
+function filterOfficeCheckboxes(q) {
+  const query = q.toLowerCase();
+  document.querySelectorAll("#docOfficesWrap .checkbox-pill").forEach(el => {
+    el.style.display = el.dataset.name.toLowerCase().includes(query) ? "" : "none";
+  });
+}
+
+// ── Tag browse dropdown in doc form ──────────────────────
+let _tagBrowseOpen = false;
+
+function toggleTagBrowse() {
+  const dd = document.getElementById("tagBrowseDropdown");
+  if (!dd) return;
+  _tagBrowseOpen = !_tagBrowseOpen;
+  dd.style.display = _tagBrowseOpen ? "block" : "none";
+  if (_tagBrowseOpen) buildTagBrowseOptions();
+}
+
+function buildTagBrowseOptions() {
+  const wrap  = document.getElementById("tagBrowseOptions");
+  if (!wrap) return;
+  const input = document.getElementById("tagsInput");
+  const selected = (input && input._getTags) ? input._getTags() : [];
+
+  if (!allTags || !allTags.length) {
+    wrap.innerHTML = `<div class="text-muted small p-2">No tags available.</div>`;
+    return;
+  }
+  wrap.innerHTML = allTags.map(t => `
+    <label class="tag-filter-option ${selected.includes(t.name) ? "selected" : ""}"
+           data-name="${escapeHtml(t.name)}">
+      <input type="checkbox" data-tag="${escapeHtml(t.name)}"
+             ${selected.includes(t.name) ? "checked" : ""}
+             onchange="onTagBrowseChange(this)" />
+      <span class="tag-pill">${escapeHtml(t.name)}</span>
+    </label>`).join("");
+}
+
+function onTagBrowseChange(cb) {
+  const input = document.getElementById("tagsInput");
+  if (!input || !input._getTags) return;
+  const tag  = cb.dataset.tag;
+  const curr = input._getTags();
+  if (cb.checked) {
+    if (!curr.includes(tag)) input._setTags([...curr, tag]);
+  } else {
+    input._setTags(curr.filter(t => t !== tag));
+  }
+  cb.closest("label").classList.toggle("selected", cb.checked);
+}
+
+// Close tag browse when clicking outside
+document.addEventListener("click", e => {
+  const wrap = document.getElementById("tagBrowseWrap");
+  if (wrap && !wrap.contains(e.target) && _tagBrowseOpen) {
+    _tagBrowseOpen = false;
+    const dd = document.getElementById("tagBrowseDropdown");
+    if (dd) dd.style.display = "none";
+  }
+});

@@ -39,7 +39,8 @@ function populateOfficeCheckboxes(containerId, selectedValues = []) {
   const wrap = document.getElementById(containerId);
   if (!wrap) return;
   wrap.innerHTML = allOffices.map(o => `
-    <label class="checkbox-pill ${selectedValues.includes(o.name)?"active":""}">
+    <label class="checkbox-pill ${selectedValues.includes(o.name)?"active":""}"
+           data-name="${escapeHtml(o.name.toLowerCase())}">
       <input type="checkbox" value="${escapeHtml(o.name)}"
         ${selectedValues.includes(o.name)?"checked":""}
         onchange="this.closest('label').classList.toggle('active',this.checked)">

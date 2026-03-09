@@ -262,7 +262,6 @@
           <tr>
             <th style="width:44px"></th>
             <th class="sortable" data-col="fileName">File Name <i class="fa-solid fa-sort sort-icon"></i></th>
-            <th class="sortable" data-col="offices">Office <i class="fa-solid fa-sort sort-icon"></i></th>
             <th>Tags</th>
             <th class="sortable" data-col="dateCreated">Date <i class="fa-solid fa-sort sort-icon"></i></th>
             <th>Version</th>
@@ -458,20 +457,38 @@
                      placeholder="Brief description of this document" required />
             </div>
 
-            <!-- Offices (checkboxes) -->
+            <!-- Offices (checkboxes with search) -->
             <div class="col-12">
               <label class="form-label">Offices / Departments</label>
+              <div class="office-search-wrap">
+                <input type="text" id="officeSearchInput" class="dms-input"
+                       placeholder="Search offices…" autocomplete="off"
+                       oninput="filterOfficeCheckboxes(this.value)" />
+              </div>
               <div id="docOfficesWrap" class="checkbox-pill-group"></div>
             </div>
 
-            <!-- Tags (autocomplete) -->
+            <!-- Tags (autocomplete + checkbox dropdown) -->
             <div class="col-md-6">
-              <label class="form-label" for="tagsInput">Tags</label>
+              <label class="form-label" for="tagsInput">Tags <span class="text-danger">*</span></label>
               <div id="tagPillsWrap" class="tag-pills-selected-wrap"></div>
               <div class="tag-autocomplete-wrap">
                 <input type="text" id="tagsInput" class="dms-input"
-                       placeholder="Type to search tags…" autocomplete="off" />
+                       placeholder="Search or browse tags…" autocomplete="off" />
                 <div id="tagSuggestions" class="tag-suggestions-dropdown" style="display:none"></div>
+              </div>
+              <!-- Tag browse dropdown -->
+              <div class="tag-browse-wrap" id="tagBrowseWrap">
+                <button type="button" class="tag-browse-btn" id="tagBrowseBtn"
+                        onclick="toggleTagBrowse()">
+                  <i class="fa-solid fa-list-check me-1"></i>Browse all tags
+                  <i class="fa-solid fa-chevron-down ms-auto" style="font-size:10px"></i>
+                </button>
+                <div class="tag-browse-dropdown" id="tagBrowseDropdown" style="display:none">
+                  <div id="tagBrowseOptions" class="tag-filter-options">
+                    <div class="text-muted small p-2">Loading…</div>
+                  </div>
+                </div>
               </div>
               <input type="hidden" id="tagsInputHidden" />
             </div>

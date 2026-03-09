@@ -121,7 +121,6 @@ function renderDocumentTable(docs) {
         <div class="filename-text">${escapeHtml(doc.fileName||"Untitled")}</div>
         <div class="filename-sub">${escapeHtml(doc.subject||"")}</div>
       </td>
-      <td class="text-muted small">${escapeHtml(offices)}</td>
       <td>
         ${(doc.tags||[]).slice(0,3).map(t=>`<span class="tag-pill">${escapeHtml(t)}</span>`).join("")}
         ${(doc.tags||[]).length>3?`<span class="tag-pill tag-more">+${doc.tags.length-3}</span>`:""}
