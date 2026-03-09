@@ -157,6 +157,8 @@ async function handleLogout() {
 // ── Auth state guard (call on app.html load) ─────────────
 function initAuthGuard(onAuthed) {
   showLoading(true);
+  let _profileUnsub = null; // real-time profile listener
+
   const timeout = setTimeout(() => {
     showLoading(false);
     window.location.href = "index.html";
@@ -165,6 +167,7 @@ function initAuthGuard(onAuthed) {
   auth.onAuthStateChanged(async firebaseUser => {
     clearTimeout(timeout);
     if (!firebaseUser) {
+      if (_profileUnsub) { _profileUnsub(); _profileUnsub = null; }
       showLoading(false);
       window.location.href = "index.html";
       return;
@@ -180,6 +183,20 @@ function initAuthGuard(onAuthed) {
       setCurrentUser(profile);
       showLoading(false);
       onAuthed(profile);
+
+      // Real-time listener — kicks user out immediately if deactivated while logged in
+      _profileUnsub = db.collection(C.USERS).doc(firebaseUser.uid)
+        .onSnapshot(async docSnap => {
+          if (!docSnap.exists) return;
+          const data = docSnap.data();
+          if (!data.isActive || data.status !== "active") {
+            if (_profileUnsub) { _profileUnsub(); _profileUnsub = null; }
+            await auth.signOut();
+            alert("Your account has been deactivated. Contact your administrator.");
+            window.location.href = "index.html";
+          }
+        });
+
     } catch (err) {
       console.error("Auth guard error:", err);
       showLoading(false);
