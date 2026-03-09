@@ -62,6 +62,7 @@ function renderOfficesTable() {
     tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-3">No offices yet.</td></tr>`;
     return;
   }
+  const actor = getCurrentUser();
   tbody.innerHTML = allOffices.map((o,i) => `
     <tr class="animate-row" style="animation-delay:${i*20}ms">
       <td class="fw-medium">${escapeHtml(o.name)}</td>
@@ -70,9 +71,10 @@ function renderOfficesTable() {
         <button class="btn-icon-action" onclick="openEditOfficeModal('${o.id}')" title="Edit">
           <i class="fa-solid fa-pen"></i>
         </button>
+        ${isSystemAdmin(actor) ? `
         <button class="btn-icon-action btn-delete" onclick="confirmDeleteOffice('${o.id}','${escapeHtml(o.name)}')" title="Delete">
           <i class="fa-solid fa-trash"></i>
-        </button>
+        </button>` : ""}
       </td>
     </tr>`).join("");
 }
@@ -125,6 +127,9 @@ async function handleOfficeFormSubmit(e) {
 }
 
 function confirmDeleteOffice(id, name) {
+  if (!isSystemAdmin(getCurrentUser())) {
+    showToast("Only System Admin can delete offices.", "error"); return;
+  }
   document.getElementById("deleteOfficeName").textContent = name;
   document.getElementById("confirmDeleteOfficeBtn").onclick = async () => {
     try {
