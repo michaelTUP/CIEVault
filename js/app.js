@@ -1,10 +1,9 @@
-
 /**
  * app.js — Main app bootstrap, navigation, dashboard
  */
 
 // ── Views ─────────────────────────────────────────────────
-const VIEWS = ["documents","users","tags","offices","audit","dashboard"];
+const VIEWS = ["documents","users","tags","offices","audit","dashboard","events"];
 let _viewLoaded = {};
 
 function showView(view) {
@@ -15,20 +14,19 @@ function showView(view) {
   document.querySelectorAll(".nav-link[data-view]").forEach(a =>
     a.classList.toggle("active", a.dataset.view===view)
   );
-  // Close mobile sidebar
   document.getElementById("sidebar")?.classList.remove("sidebar-open");
   document.getElementById("sidebarOverlay")?.classList.remove("active");
 
-  // Lazy load view data
   if (!_viewLoaded[view]) {
     _viewLoaded[view] = true;
     if (view==="tags")      { fetchTags().then(renderTagsTable); }
     if (view==="offices")   { fetchOffices().then(renderOfficesTable); }
     if (view==="audit")     { renderAuditLog(); }
     if (view==="dashboard") { renderDashboard(); }
+    if (view==="events")    { fetchEvents(); }
   }
-  // Always refresh users + pending panel when switching to users view
-  if (view==="users") { fetchUsers(); }
+  if (view==="users")   { fetchUsers(); }
+  if (view==="events")  { renderCalendar(); }
 }
 
 // ── Sidebar — show/hide items per role ───────────────────
@@ -40,7 +38,10 @@ function setupSidebarForRole(user) {
   const avatarEl= document.getElementById("sidebarAvatar");
   if (nameEl)   nameEl.textContent   = user.name || "User";
   if (roleEl)   roleEl.textContent   = USER_TYPE_LABELS[user.userType] || user.userType;
-  if (officeEl) officeEl.textContent = user.office || "";
+  if (officeEl) {
+    const offices = Array.isArray(user.offices) ? user.offices : (user.office ? [user.office] : []);
+    officeEl.textContent = offices.join(", ") || "";
+  }
   if (avatarEl) {
     avatarEl.textContent   = initials(user.name);
     avatarEl.style.background = avatarColor(user.name);
@@ -62,6 +63,9 @@ function setupSidebarForRole(user) {
   // Hide "Register Document" for guests
   const regDocBtn = document.getElementById("regDocBtn");
   if (regDocBtn) regDocBtn.style.display = isRegularPlus(user) ? "" : "none";
+  // Hide "Add Event" for guests
+  const addEventBtn = document.getElementById("addEventBtn");
+  if (addEventBtn) addEventBtn.style.display = isRegularPlus(user) ? "" : "none";
 }
 
 // ── Dashboard ─────────────────────────────────────────────

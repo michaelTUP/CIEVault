@@ -1,10 +1,9 @@
-
 /**
  * sw.js — DocVault Service Worker
  * Strategy: Cache-first for static assets, network-first for API calls
  */
 
-const CACHE_NAME    = "docvault-v3";
+const CACHE_NAME    = "docvault-v7";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -20,6 +19,7 @@ const STATIC_ASSETS = [
   "./js/documents.js",
   "./js/audit.js",
   "./js/search.js",
+  "./js/events.js",
   "./js/app.js",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",

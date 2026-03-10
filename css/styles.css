@@ -936,3 +936,128 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
   padding: 6px 10px; border-top: 1px solid var(--border);
   display: flex; justify-content: flex-end;
 }
+
+/* ── Multi-office checkbox wrap in edit user modal ────────── */
+.office-checkbox-wrap {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  background: #111923; border: 1px solid var(--border-light);
+  border-radius: 8px; padding: 10px;
+  max-height: 140px; overflow-y: auto;
+}
+.office-checkbox-wrap .checkbox-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-elevated); border: 1px solid var(--border-light);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 12.5px; color: var(--text-sub);
+  cursor: pointer; transition: all .18s;
+}
+.office-checkbox-wrap .checkbox-pill input { display: none; }
+.office-checkbox-wrap .checkbox-pill.selected {
+  background: rgba(240,160,51,.15);
+  border-color: var(--accent); color: var(--accent);
+}
+
+/* ── Office search in doc form ───────────────────────────── */
+.office-search-wrap { margin-bottom: 8px; }
+.office-search-wrap input { font-size: 13px; padding: 6px 10px; }
+
+/* ── Tag browse dropdown in doc form ────────────────────── */
+.tag-browse-wrap { position: relative; margin-top: 6px; }
+.tag-browse-btn {
+  display: flex; align-items: center; gap: 6px;
+  width: 100%; padding: 6px 12px; font-size: 12.5px;
+  background: var(--bg-elevated); border: 1px solid var(--border-light);
+  border-radius: 8px; color: var(--text-sub); cursor: pointer;
+  transition: all .18s;
+}
+.tag-browse-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tag-browse-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  z-index: 400; background: var(--bg-elevated);
+  border: 1px solid var(--border-light); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ── Events: View toggle ─────────────────────────────────── */
+.view-toggle-group { display:flex; border:1px solid var(--border-light); border-radius:8px; overflow:hidden; }
+.view-toggle-btn {
+  padding:6px 14px; font-size:13px; font-weight:500;
+  background:transparent; border:none; color:var(--text-sub);
+  cursor:pointer; transition:all .18s;
+}
+.view-toggle-btn.active { background:var(--accent); color:#000; }
+
+/* ── Calendar nav ────────────────────────────────────────── */
+.cal-nav {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:12px;
+}
+.cal-month-label { font-size:16px; font-weight:700; color:var(--text-main); min-width:160px; text-align:center; }
+
+/* ── Calendar grid ───────────────────────────────────────── */
+.cal-grid-header {
+  display:grid; grid-template-columns:repeat(7,1fr);
+  text-align:center; font-size:11px; font-weight:600;
+  color:var(--text-sub); text-transform:uppercase;
+  border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:4px;
+}
+.cal-grid {
+  display:grid; grid-template-columns:repeat(7,1fr);
+  gap:2px;
+}
+.cal-cell {
+  min-height:90px; background:var(--bg-elevated);
+  border:1px solid var(--border); border-radius:6px;
+  padding:6px; cursor:pointer; transition:border-color .15s;
+  overflow:hidden;
+}
+.cal-cell:hover { border-color:var(--accent); }
+.cal-cell-empty { background:transparent; border-color:transparent; cursor:default; }
+.cal-cell-empty:hover { border-color:transparent; }
+.cal-today { border-color:var(--accent) !important; background:rgba(240,160,51,.06); }
+.cal-date { font-size:12px; font-weight:600; color:var(--text-sub); margin-bottom:4px; }
+.cal-date-today {
+  background:var(--accent); color:#000;
+  border-radius:50%; width:22px; height:22px;
+  display:flex; align-items:center; justify-content:center; font-size:11px;
+}
+
+/* ── Calendar event pills ────────────────────────────────── */
+.cal-event-pill {
+  font-size:11px; padding:2px 6px; border-radius:4px;
+  margin-bottom:2px; cursor:pointer; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+  transition:opacity .15s;
+}
+.cal-event-pill:hover { opacity:.8; }
+.cal-event-pill.vis-public       { background:rgba(91,201,163,.2); color:#5bc9a3; }
+.cal-event-pill.vis-internal     { background:rgba(60,180,245,.2); color:#3cb4f5; }
+.cal-event-pill.vis-confidential { background:rgba(231,76,94,.2);  color:#e74c5e; }
+.cal-more { font-size:10px; color:var(--text-sub); padding:1px 4px; cursor:pointer; }
+.cal-more:hover { color:var(--accent); }
+
+/* ── Event list cards ────────────────────────────────────── */
+.event-list-card {
+  display:flex; gap:16px; align-items:flex-start;
+  background:var(--bg-elevated); border:1px solid var(--border-light);
+  border-radius:var(--radius); padding:14px 16px;
+  margin-bottom:10px; cursor:pointer; transition:border-color .18s;
+}
+.event-list-card:hover { border-color:var(--accent); }
+.event-list-date-col {
+  text-align:center; min-width:44px;
+  border-right:1px solid var(--border); padding-right:14px;
+}
+.event-list-day { font-size:22px; font-weight:800; color:var(--accent); line-height:1; }
+.event-list-mon { font-size:11px; font-weight:600; color:var(--text-sub); text-transform:uppercase; }
+.event-list-yr  { font-size:10px; color:var(--text-sub); }
+.event-list-body { flex:1; min-width:0; }
+.event-list-desc { font-size:12.5px; color:var(--text-sub); margin-top:6px; }
+.event-list-actions { display:flex; gap:4px; align-items:center; }
+
+/* ── Event doc attach wrap ───────────────────────────────── */
+.doc-attach-wrap { max-height:160px; overflow-y:auto; }
+.doc-pill { font-size:12px; }
+
+/* ── People wrap ─────────────────────────────────────────── */
+.people-wrap { max-height:130px; overflow-y:auto; }
