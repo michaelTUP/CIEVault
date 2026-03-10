@@ -110,6 +110,23 @@
     <i class="fa-solid fa-bars"></i>
   </button>
 
+  <!-- Notification bell (top right) -->
+  <div class="notif-bell-wrap" id="notifBellWrap">
+    <button class="notif-bell-btn" onclick="toggleNotifPanel()" title="Notifications">
+      <i class="fa-solid fa-bell"></i>
+      <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+    </button>
+    <div class="notif-panel" id="notifPanel" style="display:none">
+      <div class="notif-panel-header">
+        <span>Notifications</span>
+        <button class="notif-clear-btn" onclick="clearNotifications()">Clear all</button>
+      </div>
+      <div id="notifList" class="notif-list">
+        <div class="notif-empty">No upcoming events</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Config banner -->
   <div id="configBanner" class="config-banner" style="display:none">
     <i class="fa-solid fa-triangle-exclamation me-2"></i>

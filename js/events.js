@@ -55,6 +55,7 @@ async function fetchEvents() {
     renderCalendar();
     filterEventsList();
     populateEventFilterOffices();
+    checkEventNotifications();
   } catch(e) { console.error("fetchEvents:", e); }
 }
 
@@ -465,6 +466,7 @@ async function handleEventSubmit(e) {
     }
     closeModal("eventModal");
     await fetchEvents();
+    checkEventNotifications();
   } catch(err) { showToast("Error: " + err.message, "error"); }
 }
 
@@ -504,3 +506,159 @@ function fileTypeIcon(type) {
   };
   return icons[type] || icons.other;
 }
+
+// ── Notifications ─────────────────────────────────────────
+let _notifDismissed = new Set(
+  JSON.parse(localStorage.getItem("notifDismissed") || "[]")
+);
+
+function checkEventNotifications() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const now       = new Date();
+  const in2days   = new Date(now.getTime() + 2  * 24 * 60 * 60 * 1000);
+  const in1hour   = new Date(now.getTime() + 1  * 60 * 60 * 1000);
+
+  const upcoming = allEvents.filter(ev => {
+    if (!canViewEvent(ev, user)) return false;
+    const start = ev.startDate?.toDate?.() || new Date(ev.startDate||0);
+    return start >= now && start <= in2days;
+  });
+
+  const notifs = [];
+
+  upcoming.forEach(ev => {
+    const start     = ev.startDate?.toDate?.() || new Date(ev.startDate||0);
+    const diffMs    = start - now;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const diffMins  = diffMs / (1000 * 60);
+
+    // 1-hour notification
+    if (diffHours <= 1 && diffMins > 0) {
+      const key = `${ev.id}-1h`;
+      notifs.push({
+        key,
+        icon : "fa-clock",
+        color: "#e74c5e",
+        title: ev.title,
+        msg  : `Starting in ${Math.round(diffMins)} minute${Math.round(diffMins)!==1?"s":""}`,
+        event: ev
+      });
+    }
+    // 2-day notification
+    else if (diffHours <= 48) {
+      const key = `${ev.id}-2d`;
+      const hrs = Math.round(diffHours);
+      const msg = hrs < 24
+        ? `Starting in ${hrs} hour${hrs!==1?"s":""}`
+        : `Starting in ${Math.round(diffHours/24)} day${Math.round(diffHours/24)!==1?"s":""}`;
+      notifs.push({
+        key,
+        icon : "fa-calendar-check",
+        color: "#3cb4f5",
+        title: ev.title,
+        msg,
+        event: ev
+      });
+    }
+  });
+
+  // Filter out dismissed
+  const active = notifs.filter(n => !_notifDismissed.has(n.key));
+
+  renderNotifPanel(active);
+  fireBrowserNotifications(active);
+}
+
+function renderNotifPanel(notifs) {
+  const badge = document.getElementById("notifBadge");
+  const list  = document.getElementById("notifList");
+  if (!badge || !list) return;
+
+  if (!notifs.length) {
+    badge.style.display = "none";
+    list.innerHTML = `<div class="notif-empty">No upcoming events</div>`;
+    return;
+  }
+
+  badge.style.display = "";
+  badge.textContent   = notifs.length;
+
+  list.innerHTML = notifs.map(n => `
+    <div class="notif-item" onclick="openEventDetail('${n.event.id}')">
+      <div class="notif-icon" style="color:${n.color}">
+        <i class="fa-solid ${n.icon}"></i>
+      </div>
+      <div class="notif-body">
+        <div class="notif-title">${escapeHtml(n.title)}</div>
+        <div class="notif-msg">${n.msg}</div>
+      </div>
+      <button class="notif-dismiss" title="Dismiss"
+              onclick="event.stopPropagation();dismissNotif('${n.key}')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>`).join("");
+}
+
+async function fireBrowserNotifications(notifs) {
+  if (!("Notification" in window)) return;
+
+  // Request permission if not granted
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+  if (Notification.permission !== "granted") return;
+
+  notifs.forEach(n => {
+    // Only fire once per session using sessionStorage
+    const sessionKey = `notif-fired-${n.key}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+    sessionStorage.setItem(sessionKey, "1");
+
+    new Notification(`📅 ${n.title}`, {
+      body : n.msg,
+      icon : "./icons/icon-192.png",
+      tag  : n.key  // prevents duplicate notifications
+    });
+  });
+}
+
+function dismissNotif(key) {
+  _notifDismissed.add(key);
+  localStorage.setItem("notifDismissed", JSON.stringify([..._notifDismissed]));
+  checkEventNotifications();
+}
+
+function clearNotifications() {
+  // Dismiss all current notifications
+  const badge = document.getElementById("notifBadge");
+  const list  = document.getElementById("notifList");
+  if (badge) badge.style.display = "none";
+  if (list)  list.innerHTML = `<div class="notif-empty">No upcoming events</div>`;
+
+  // Mark all as dismissed
+  allEvents.forEach(ev => {
+    _notifDismissed.add(`${ev.id}-1h`);
+    _notifDismissed.add(`${ev.id}-2d`);
+  });
+  localStorage.setItem("notifDismissed", JSON.stringify([..._notifDismissed]));
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById("notifPanel");
+  if (!panel) return;
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+}
+
+// Close panel when clicking outside
+document.addEventListener("click", e => {
+  const wrap = document.getElementById("notifBellWrap");
+  if (wrap && !wrap.contains(e.target)) {
+    const panel = document.getElementById("notifPanel");
+    if (panel) panel.style.display = "none";
+  }
+});
+
+// Re-check every 5 minutes while app is open
+setInterval(checkEventNotifications, 5 * 60 * 1000);
