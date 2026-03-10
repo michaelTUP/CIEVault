@@ -1049,10 +1049,11 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
   border-right:1px solid var(--border); padding-right:14px;
 }
 .event-list-day { font-size:22px; font-weight:800; color:var(--accent); line-height:1; }
-.event-list-mon { font-size:11px; font-weight:600; color:var(--text-sub); text-transform:uppercase; }
-.event-list-yr  { font-size:10px; color:var(--text-sub); }
+.event-list-mon { font-size:11px; font-weight:600; color:#cbd5e1; text-transform:uppercase; }
+.event-list-yr  { font-size:10px; color:#94a3b8; }
 .event-list-body { flex:1; min-width:0; }
-.event-list-desc { font-size:12.5px; color:var(--text-sub); margin-top:6px; }
+.event-list-body .text-muted { color:#94a3b8 !important; }
+.event-list-desc { font-size:12.5px; color:#94a3b8; margin-top:6px; }
 .event-list-actions { display:flex; gap:4px; align-items:center; }
 
 /* ── Event doc attach wrap ───────────────────────────────── */
