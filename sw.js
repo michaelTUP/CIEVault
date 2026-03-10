@@ -1,9 +1,10 @@
+
 /**
  * sw.js — DocVault Service Worker
  * Strategy: Cache-first for static assets, network-first for API calls
  */
 
-const CACHE_NAME    = "docvault-v6";
+const CACHE_NAME    = "docvault-v3";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
