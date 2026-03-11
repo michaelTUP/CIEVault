@@ -489,14 +489,6 @@ function confirmDeleteEvent(id, name) {
 }
 
 // ── Helpers ───────────────────────────────────────────────
-function formatDateTime(d) {
-  if (!d || isNaN(d)) return "—";
-  return d.toLocaleString("en-US", {
-    month:"short", day:"numeric", year:"numeric",
-    hour:"numeric", minute:"2-digit", hour12:true
-  });
-}
-
 function fileTypeIcon(type) {
   const icons = {
     pdf:"fa-solid fa-file-pdf", document:"fa-solid fa-file-word",
