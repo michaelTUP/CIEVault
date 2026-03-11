@@ -1123,3 +1123,14 @@ textarea.dms-input      { resize: vertical; min-height: 80px; }
   font-size: 12px; flex-shrink: 0; transition: color .15s;
 }
 .notif-dismiss:hover { color: #e74c5e; }
+
+/* ── Clickable doc pill in event detail ─────────────────── */
+.tag-pill-link {
+  cursor: pointer; transition: all .18s;
+  border: 1px solid transparent;
+}
+.tag-pill-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(240,160,51,.12);
+}

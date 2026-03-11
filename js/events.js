@@ -258,7 +258,11 @@ function openEventDetail(id) {
   // Attached docs
   const attachedDocs = (ev.attachedDocIds||[]).map(docId => {
     const doc = allDocuments.find(d => d.id === docId);
-    return doc ? `<span class="tag-pill">${escapeHtml(doc.fileName||"")}</span>` : "";
+    return doc ? `
+      <span class="tag-pill tag-pill-link" onclick="closeModal('eventDetailModal');openPreviewModal('${docId}')"
+            title="Click to preview">
+        <i class="${fileTypeIcon(doc.fileType)} me-1"></i>${escapeHtml(doc.fileName||"")}
+      </span>` : "";
   }).filter(Boolean).join("") || "<span class='text-muted small'>None</span>";
 
   document.getElementById("eventDetailBody").innerHTML = `
