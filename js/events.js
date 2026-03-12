@@ -319,9 +319,14 @@ function openEventDetail(id) {
 // ── Add / Edit event modal ────────────────────────────────
 function openAddEventModal(prefillDate) {
   _editEventId = null;
+  _eventSaving = false;
   document.getElementById("eventModalTitle").textContent = "Add Event";
   document.getElementById("eventForm").reset();
   document.getElementById("eventVisibility").value = "Internal";
+
+  // Reset save button
+  const saveBtn = document.querySelector("#eventModal .btn-dms-primary");
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = "Save Event"; }
 
   if (!prefillDate) {
     const now = new Date();
@@ -425,8 +430,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (form) form.addEventListener("submit", handleEventSubmit);
 });
 
+let _eventSaving = false;
+
 async function handleEventSubmit(e) {
   e.preventDefault();
+
+  // Prevent double-submit
+  if (_eventSaving) return;
+  _eventSaving = true;
+
+  const saveBtn = document.querySelector("#eventModal .btn-dms-primary");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
+  }
+
   const user  = getCurrentUser();
   const title = document.getElementById("eventTitle").value.trim();
   const start = document.getElementById("eventStart").value;
@@ -434,10 +452,10 @@ async function handleEventSubmit(e) {
   const desc  = document.getElementById("eventDesc").value.trim();
   const vis   = document.getElementById("eventVisibility").value;
 
-  if (!title) { showToast("Event title is required.", "error"); return; }
-  if (!start) { showToast("Start date is required.", "error"); return; }
-  if (!end)   { showToast("End date is required.", "error"); return; }
-  if (new Date(end) < new Date(start)) { showToast("End must be after start.", "error"); return; }
+  if (!title) { showToast("Event title is required.", "error"); resetSaveBtn(saveBtn); return; }
+  if (!start) { showToast("Start date is required.", "error"); resetSaveBtn(saveBtn); return; }
+  if (!end)   { showToast("End date is required.", "error"); resetSaveBtn(saveBtn); return; }
+  if (new Date(end) < new Date(start)) { showToast("End must be after start.", "error"); resetSaveBtn(saveBtn); return; }
 
   const offices = Array.from(document.querySelectorAll("#eventOfficesWrap input:checked")).map(cb => cb.value);
 
@@ -471,7 +489,15 @@ async function handleEventSubmit(e) {
     closeModal("eventModal");
     await fetchEvents();
     checkEventNotifications();
-  } catch(err) { showToast("Error: " + err.message, "error"); }
+  } catch(err) {
+    showToast("Error: " + err.message, "error");
+    resetSaveBtn(saveBtn);
+  }
+}
+
+function resetSaveBtn(btn) {
+  _eventSaving = false;
+  if (btn) { btn.disabled = false; btn.innerHTML = "Save Event"; }
 }
 
 // ── Delete event ─────────────────────────────────────────
